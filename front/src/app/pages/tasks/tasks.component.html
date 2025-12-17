@@ -1,0 +1,300 @@
+<div class="container">
+  <h2>📋 Student Workspace</h2>
+
+  <!-- Productivity Widget -->
+  <div class="productivity-card">
+    <div class="prod-header">
+      <h3>🚀 Weekly Focus</h3>
+      <span class="hours-badge">{{ weeklyHours }}h / 20h Goal</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" [style.width.%]="(weeklyHours / 20) * 100"></div>
+    </div>
+    <p class="prod-subtext" *ngIf="weeklyHours > 0">
+      Great job! You've logged {{ weeklyHours }} hours.
+    </p>
+    <p class="prod-subtext" *ngIf="weeklyHours === 0">Start a task to track your time!</p>
+  </div>
+
+  <!-- Add Task Form -->
+  <div class="add-task-card">
+    <h3>New Task</h3>
+    <div class="input-group">
+      <div class="form-field full-width">
+        <label>Task Title <span class="required">*</span></label>
+        <input
+          type="text"
+          [(ngModel)]="newTask.title"
+          placeholder="e.g. Math Homework"
+          class="main-input"
+          [class.invalid]="!newTask.title"
+        />
+        <span class="error-msg" *ngIf="!newTask.title">Title is required</span>
+      </div>
+
+      <div class="form-field full-width">
+        <label>Description (Optional)</label>
+        <textarea
+          [(ngModel)]="newTask.description"
+          placeholder="Add details..."
+          class="desc-input"
+        ></textarea>
+      </div>
+
+      <div class="form-field">
+        <label>Priority</label>
+        <select [(ngModel)]="newTask.priority" class="priority-select">
+          <option *ngFor="let p of priorities" [value]="p">{{ p }}</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label>Due Date <span class="required">*</span></label>
+        <input
+          type="date"
+          [(ngModel)]="newTask.dueDate"
+          class="date-input"
+          [class.invalid]="!newTask.dueDate"
+        />
+        <span class="error-msg" *ngIf="!newTask.dueDate">Date is required</span>
+      </div>
+
+      <div class="form-field">
+        <label>Est. Hours</label>
+        <input
+          type="number"
+          [(ngModel)]="newTask.estimatedHours"
+          placeholder="1"
+          class="hours-input"
+          min="1"
+        />
+      </div>
+
+      <div class="form-field">
+        <label style="visibility: hidden">Action</label>
+        <button (click)="addTask()" [disabled]="!isFormValid()" [class.disabled]="!isFormValid()">
+          + Add Task
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Kanban-ish / List View -->
+  <div class="task-list">
+    <!-- ADDED CLICK HANDLER HERE -->
+    <div *ngFor="let task of tasks" class="task-card" (click)="openTaskView(task)">
+      <div class="task-header">
+        <span class="priority-badge" [style.background-color]="getPriorityColor(task.priority)">
+          {{ task.priority }}
+        </span>
+        <span class="task-title">{{ task.title }}</span>
+      </div>
+
+      <div class="task-body">
+        <div class="meta-row">
+          <span>📅 {{ task.dueDate || 'No Date' }}</span>
+          <span>⏱ {{ task.estimatedHours }}h Est.</span>
+        </div>
+        <!-- Description Preview -->
+        <p class="task-desc-preview" *ngIf="task.description">
+          {{ task.description | slice : 0 : 50 }}{{ task.description!.length > 50 ? '...' : '' }}
+        </p>
+
+        <!-- SUBTASKS PREVIEW IN MAIN LIST -->
+        <div *ngIf="task.subTasks && task.subTasks.length > 0" class="subtask-preview">
+          <div *ngFor="let st of task.subTasks" class="st-row">
+            <span class="st-status-dot" [class.done]="st.status === 'DONE'">●</span>
+            <span class="st-title">{{ st.title }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="task-footer" (click)="$event.stopPropagation()">
+        <select
+          [ngModel]="task.status"
+          (change)="updateStatus(task, $event)"
+          class="status-select"
+          [ngClass]="task.status"
+        >
+          <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
+        </select>
+        <button class="delete-btn" (click)="delete(task)">🗑</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TASK VIEW/EDIT MODAL -->
+  <div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+    <div class="modal-content task-modal" (click)="$event.stopPropagation()">
+      <!-- CLOSE BUTTON -->
+      <button class="modal-close-btn" (click)="closeEditModal()">✕</button>
+
+      <!-- ========== VIEW MODE ========== -->
+      <div *ngIf="!isEditingTask" class="view-mode">
+        <div class="task-view-header">
+          <span
+            class="priority-badge large-badge"
+            [style.background-color]="getPriorityColor(editTaskData.priority)"
+          >
+            {{ editTaskData.priority }}
+          </span>
+          <h2 class="task-view-title">{{ editTaskData.title }}</h2>
+        </div>
+
+        <div class="task-view-meta">
+          <span>📅 {{ editTaskData.dueDate || 'No Due Date' }}</span>
+          <span>⏱ {{ editTaskData.estimatedHours }}h Estimated</span>
+          <span class="status-badge" [ngClass]="editTaskData.status">{{
+            editTaskData.status
+          }}</span>
+        </div>
+
+        <p class="task-view-description" *ngIf="editTaskData.description">
+          {{ editTaskData.description }}
+        </p>
+        <p class="task-view-description empty" *ngIf="!editTaskData.description">
+          No description provided.
+        </p>
+
+        <!-- View Mode Actions -->
+        <div class="view-mode-actions">
+          <button class="edit-btn" (click)="enableEditTask()">✎ Edit Task</button>
+          <button class="delete-btn-full" (click)="delete(editTaskData)">🗑 Delete</button>
+        </div>
+
+        <!-- SUBTASKS LIST (View Mode) -->
+        <div class="subtasks-section">
+          <div class="subtasks-header">
+            <h3>Subtasks ({{ editTaskData.subTasks?.length || 0 }})</h3>
+            <button class="add-subtask-btn" (click)="toggleSubTaskForm(true)">+ Add Subtask</button>
+          </div>
+
+          <div class="subtask-cards">
+            <div *ngFor="let st of editTaskData.subTasks" class="subtask-card">
+              <div class="subtask-card-header">
+                <span
+                  class="priority-badge mini-badge"
+                  [style.background-color]="getPriorityColor(st.priority || TaskPriority.MEDIUM)"
+                >
+                  {{ st.priority || 'MEDIUM' }}
+                </span>
+                <strong class="subtask-card-title">{{ st.title }}</strong>
+                <button class="edit-icon-btn" (click)="openSubTaskEdit(st)">✎</button>
+              </div>
+              <div class="subtask-card-meta">
+                <span>📅 {{ st.dueDate || 'No Date' }}</span>
+                <span>⏱ {{ st.estimatedHours }}h</span>
+              </div>
+              <p class="subtask-card-desc" *ngIf="st.description">{{ st.description }}</p>
+              <div class="subtask-card-footer">
+                <select
+                  [ngModel]="st.status"
+                  (change)="updateSubTaskStatus(st, $event)"
+                  class="status-select"
+                  [ngClass]="st.status"
+                >
+                  <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- ADD/EDIT SUBTASK FORM (Collapsible) -->
+          <div *ngIf="showSubTaskForm" class="subtask-form-panel">
+            <h4>{{ editingSubTaskId ? 'Edit Subtask' : 'New Subtask' }}</h4>
+            <div class="form-field full-width">
+              <label>Title *</label>
+              <input
+                type="text"
+                [(ngModel)]="newSubTaskTitle"
+                placeholder="Subtask title..."
+                class="main-input"
+              />
+            </div>
+            <div class="form-field full-width">
+              <label>Description</label>
+              <textarea
+                [(ngModel)]="newSubTaskDescription"
+                placeholder="Details..."
+                class="desc-input rows-2"
+              ></textarea>
+            </div>
+            <div class="row">
+              <div class="form-field">
+                <label>Priority</label>
+                <select [(ngModel)]="newSubTaskPriority" class="priority-select">
+                  <option *ngFor="let p of priorities" [value]="p">{{ p }}</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label>Due Date</label>
+                <input type="date" [(ngModel)]="newSubTaskDueDate" class="date-input" />
+              </div>
+              <div class="form-field">
+                <label>Est. Hours</label>
+                <input type="number" [(ngModel)]="newSubTaskEstHours" class="hours-input" min="1" />
+              </div>
+            </div>
+            <div class="subtask-form-actions">
+              <button class="save-btn" (click)="addSubTask()" [disabled]="!newSubTaskTitle">
+                {{ editingSubTaskId ? 'Update' : 'Add' }}
+              </button>
+              <button class="cancel-btn" (click)="toggleSubTaskForm(false)">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== EDIT MODE ========== -->
+      <div *ngIf="isEditingTask" class="edit-mode">
+        <h3>Edit Task</h3>
+
+        <div class="form-field full-width">
+          <label>Title *</label>
+          <input type="text" [(ngModel)]="editTaskData.title" class="main-input" />
+        </div>
+
+        <div class="form-field full-width">
+          <label>Description</label>
+          <textarea [(ngModel)]="editTaskData.description" class="desc-input rows-5"></textarea>
+        </div>
+
+        <div class="row">
+          <div class="form-field">
+            <label>Priority</label>
+            <select [(ngModel)]="editTaskData.priority" class="priority-select">
+              <option *ngFor="let p of priorities" [value]="p">{{ p }}</option>
+            </select>
+            <span class="warning-msg" *ngIf="getPriorityWarning()">{{ getPriorityWarning() }}</span>
+          </div>
+          <div class="form-field">
+            <label>Due Date *</label>
+            <input type="date" [(ngModel)]="editTaskData.dueDate" class="date-input" />
+          </div>
+          <div class="form-field">
+            <label>Est. Hours</label>
+            <input
+              type="number"
+              [(ngModel)]="editTaskData.estimatedHours"
+              class="hours-input"
+              min="1"
+            />
+            <span class="warning-msg" *ngIf="getHoursWarning()">{{ getHoursWarning() }}</span>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button class="cancel-btn" (click)="cancelEditTask()">Cancel</button>
+          <button
+            class="save-btn"
+            (click)="saveEditTask()"
+            [disabled]="getPriorityWarning() || getHoursWarning()"
+            [class.disabled]="getPriorityWarning() || getHoursWarning()"
+          >
+            Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

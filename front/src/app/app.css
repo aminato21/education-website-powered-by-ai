@@ -1,0 +1,122 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg-primary: #0f0f1a;
+  --bg-secondary: #1a1a2e;
+  --bg-card: #16213e;
+  --text-primary: #eaeaea;
+  --text-secondary: #a0a0a0;
+  --accent: #667eea;
+  --accent-hover: #5a6fd6;
+  --success: #27ae60;
+  --warning: #f39c12;
+  --danger: #e74c3c;
+  --sidebar-width: 60px;
+  --sidebar-expanded: 220px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+/* Sidebar Navigation */
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: var(--sidebar-width);
+  background: var(--bg-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem 0;
+  transition: width 0.3s ease;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.sidebar:hover {
+  width: var(--sidebar-expanded);
+}
+
+.sidebar-logo {
+  font-size: 1.8rem;
+  margin-bottom: 2rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.sidebar-logo .logo-text {
+  display: none;
+  margin-left: 10px;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.sidebar:hover .logo-text {
+  display: inline;
+}
+
+.sidebar-links {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 5px;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all 0.2s;
+  white-space: nowrap;
+  border-left: 3px solid transparent;
+}
+
+.sidebar-link:hover {
+  background: rgba(102, 126, 234, 0.1);
+  color: var(--text-primary);
+}
+
+.sidebar-link.active {
+  background: rgba(102, 126, 234, 0.15);
+  color: var(--accent);
+  border-left-color: var(--accent);
+}
+
+.sidebar-link .icon {
+  font-size: 1.3rem;
+  min-width: 30px;
+  text-align: center;
+}
+
+.sidebar-link .label {
+  display: none;
+  margin-left: 10px;
+  font-weight: 500;
+}
+
+.sidebar:hover .sidebar-link .label {
+  display: inline;
+}
+
+/* Main Content */
+.main-content {
+  margin-left: var(--sidebar-width);
+  padding: 2rem;
+  min-height: 100vh;
+  transition: margin-left 0.3s ease;
+}
+
+/* OLD NAVBAR - HIDDEN */
+.navbar { display: none; }
+

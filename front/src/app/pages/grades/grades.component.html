@@ -1,0 +1,251 @@
+<div class="container">
+  <h2>📚 Gradebook</h2>
+
+  <!-- Year Filter Indicator -->
+  <div class="filter-indicator" *ngIf="filterYear">
+    <span>Showing Year {{ filterYear }} only</span>
+    <button class="clear-filter-btn" (click)="clearYearFilter()">✕ Show All Years</button>
+  </div>
+  <!-- Year Averages Summary -->
+  <div class="year-summary-card">
+    <h3>Year Averages</h3>
+    <div class="year-badges">
+      <div
+        *ngFor="let year of getUniqueYears()"
+        class="year-badge"
+        [style.border-color]="getGradeColor(yearAverages[year])"
+      >
+        <span class="year-label">Year {{ year }}</span>
+        <span class="year-avg" [style.color]="getGradeColor(yearAverages[year])">{{
+          formatAverage(yearAverages[year])
+        }}</span>
+      </div>
+      <div *ngIf="getUniqueYears().length === 0" class="empty-hint">
+        Add subjects to see averages
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Subject Button -->
+  <div class="action-bar">
+    <button class="add-subject-btn" (click)="openAddSubject()">+ Add Subject</button>
+  </div>
+
+  <!-- Subjects by Year -->
+  <div *ngFor="let year of getUniqueYears()" class="year-section">
+    <h3 class="year-heading">Year {{ year }}</h3>
+
+    <div class="subject-grid">
+      <div
+        *ngFor="let subject of getSubjectsByYear(year)"
+        class="subject-card"
+        (click)="openSubjectDetail(subject)"
+        style="background: #1a1a2e; color: #eaeaea"
+      >
+        <div class="subject-header">
+          <span class="subject-name">{{ subject.name }}</span>
+          <span class="subject-avg" [style.background-color]="getGradeColor(subject.average)">
+            {{ formatAverage(subject.average) }}
+          </span>
+        </div>
+        <div class="subject-meta">
+          <span *ngIf="subject.teacher">👤 {{ subject.teacher }}</span>
+          <span>📝 {{ subject.exams?.length || 0 }} exams</span>
+        </div>
+        <div class="subject-actions" (click)="$event.stopPropagation()">
+          <button class="edit-btn" (click)="openEditSubject(subject)">✎</button>
+          <button class="delete-btn" (click)="deleteSubject(subject)">🗑</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="subjects.length === 0" class="empty-state">
+    <p>No subjects yet. Click "Add Subject" to get started!</p>
+  </div>
+
+  <!-- SUBJECT MODAL -->
+  <div class="modal-overlay" *ngIf="showSubjectModal" (click)="closeSubjectModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h3>{{ isEditingSubject ? 'Edit Subject' : 'New Subject' }}</h3>
+
+      <div class="form-field full-width">
+        <label>Subject *</label>
+        <select
+          [(ngModel)]="newSubject.subjectKey"
+          class="priority-select"
+          (change)="onSubjectKeyChange()"
+        >
+          <option value="">-- Select Subject --</option>
+          <option *ngFor="let s of mlSubjects" [value]="s.key">{{ s.name }}</option>
+        </select>
+      </div>
+
+      <!-- Custom name input for "Other" -->
+      <div class="form-field full-width" *ngIf="newSubject.subjectKey === 'OTHER'">
+        <label>Custom Subject Name *</label>
+        <input
+          type="text"
+          [(ngModel)]="customSubjectName"
+          placeholder="e.g. Art, Music..."
+          class="main-input"
+        />
+      </div>
+
+      <div class="row">
+        <div class="form-field">
+          <label>Year *</label>
+          <input type="number" [(ngModel)]="newSubject.year" min="1" max="10" class="hours-input" />
+        </div>
+        <div class="form-field">
+          <label>Teacher (optional)</label>
+          <input
+            type="text"
+            [(ngModel)]="newSubject.teacher"
+            placeholder="e.g. Mr. Smith"
+            class="main-input"
+          />
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="cancel-btn" (click)="closeSubjectModal()">Cancel</button>
+        <button
+          class="save-btn"
+          (click)="saveSubject()"
+          [disabled]="
+            !newSubject.subjectKey ||
+            !newSubject.year ||
+            (newSubject.subjectKey === 'OTHER' && !customSubjectName)
+          "
+        >
+          {{ isEditingSubject ? 'Save Changes' : 'Add Subject' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUBJECT DETAIL MODAL (Exams) -->
+  <div class="modal-overlay" *ngIf="selectedSubject" (click)="closeSubjectDetail()">
+    <div class="modal-content large-modal" (click)="$event.stopPropagation()">
+      <button class="modal-close-btn" (click)="closeSubjectDetail()">✕</button>
+
+      <div class="subject-detail-header">
+        <h3>{{ selectedSubject.name }}</h3>
+        <span
+          class="subject-avg large"
+          [style.background-color]="getGradeColor(selectedSubject.average)"
+        >
+          {{ formatAverage(selectedSubject.average) }}
+        </span>
+      </div>
+
+      <p class="subject-detail-meta">
+        Year {{ selectedSubject.year }}
+        <span *ngIf="selectedSubject.teacher"> • 👤 {{ selectedSubject.teacher }}</span>
+      </p>
+
+      <div class="exams-section">
+        <div class="exams-header">
+          <h4>Exams ({{ selectedSubject.exams?.length || 0 }})</h4>
+          <button class="add-exam-btn" (click)="openAddExam()">+ Add Exam</button>
+        </div>
+
+        <table
+          class="exams-table"
+          *ngIf="selectedSubject.exams && selectedSubject.exams.length > 0"
+        >
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Date</th>
+              <th>Grade</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let exam of selectedSubject.exams">
+              <td>{{ exam.name }}</td>
+              <td>
+                <span class="exam-type">{{ exam.type }}</span>
+              </td>
+              <td>{{ exam.date || '-' }}</td>
+              <td>
+                <span
+                  class="grade-display"
+                  [style.color]="getGradeColor((exam.grade / exam.maxGrade) * 100)"
+                >
+                  {{ exam.grade }}/{{ exam.maxGrade }}
+                </span>
+              </td>
+              <td>
+                <button class="edit-btn small" (click)="openEditExam(exam)">✎</button>
+                <button class="delete-btn small" (click)="deleteExam(exam)">🗑</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p *ngIf="!selectedSubject.exams || selectedSubject.exams.length === 0" class="empty-hint">
+          No exams yet. Add your first exam!
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXAM MODAL -->
+  <div class="modal-overlay" *ngIf="showExamModal" (click)="closeExamModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h3>{{ isEditingExam ? 'Edit Exam' : 'New Exam' }}</h3>
+
+      <div class="form-field full-width">
+        <label>Exam Name *</label>
+        <input
+          type="text"
+          [(ngModel)]="newExam.name"
+          placeholder="e.g. Midterm 1"
+          class="main-input"
+        />
+      </div>
+
+      <div class="row">
+        <div class="form-field">
+          <label>Type</label>
+          <select [(ngModel)]="newExam.type" class="priority-select">
+            <option *ngFor="let t of examTypes" [value]="t">{{ t }}</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Date *</label>
+          <input type="date" [(ngModel)]="newExam.date" class="date-input" />
+        </div>
+      </div>
+
+      <!-- Only show grade inputs if exam date has passed or is today -->
+      <div class="row" *ngIf="isExamDatePassed()">
+        <div class="form-field">
+          <label>Grade Obtained *</label>
+          <input type="number" [(ngModel)]="newExam.grade" min="0" class="hours-input" />
+        </div>
+        <div class="form-field">
+          <label>Max Grade *</label>
+          <select [(ngModel)]="newExam.maxGrade" class="priority-select">
+            <option *ngFor="let m of maxGradeOptions" [value]="m">{{ m }}</option>
+          </select>
+        </div>
+      </div>
+
+      <p class="info-msg" *ngIf="!isExamDatePassed()">
+        📅 Grade inputs will appear after the exam date.
+      </p>
+
+      <div class="modal-actions">
+        <button class="cancel-btn" (click)="closeExamModal()">Cancel</button>
+        <button class="save-btn" (click)="saveExam()" [disabled]="!newExam.name">
+          {{ isEditingExam ? 'Save Changes' : 'Add Exam' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

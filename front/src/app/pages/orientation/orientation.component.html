@@ -1,0 +1,64 @@
+<div class="container">
+  <h2>Orientation Académique</h2>
+  <form (ngSubmit)="onSubmit()" #orientationForm="ngForm">
+    <div class="form-group">
+      <label>Maths:</label>
+      <input type="number" [(ngModel)]="studentInput.mathScore" name="mathScore" required />
+    </div>
+    <div class="form-group">
+      <label>Physique:</label>
+      <input type="number" [(ngModel)]="studentInput.physicsScore" name="physicsScore" required />
+    </div>
+    <div class="form-group">
+      <label>Chimie:</label>
+      <input
+        type="number"
+        [(ngModel)]="studentInput.chemistryScore"
+        name="chemistryScore"
+        required
+      />
+    </div>
+    <div class="form-group">
+      <label>Biologie:</label>
+      <input type="number" [(ngModel)]="studentInput.biologyScore" name="biologyScore" required />
+    </div>
+    <div class="form-group">
+      <label>Anglais:</label>
+      <input type="number" [(ngModel)]="studentInput.englishScore" name="englishScore" required />
+    </div>
+    <div class="form-group">
+      <label>Géographie:</label>
+      <input
+        type="number"
+        [(ngModel)]="studentInput.geographyScore"
+        name="geographyScore"
+        required
+      />
+    </div>
+    <div class="form-group">
+      <label>Heures d'étude (hebdo):</label>
+      <input
+        type="number"
+        [(ngModel)]="studentInput.weeklySelfStudyHours"
+        name="weeklySelfStudyHours"
+        required
+      />
+    </div>
+    <div class="form-group">
+      <label>Jours d'absence:</label>
+      <input type="number" [(ngModel)]="studentInput.absenceDays" name="absenceDays" required />
+    </div>
+
+    <button type="submit" [disabled]="!orientationForm.form.valid || loading">
+      {{ loading ? 'Calcul en cours...' : 'Recommander ma filière' }}
+    </button>
+  </form>
+
+  <div *ngIf="prediction" class="result">
+    <h3>🎯 Filière recommandée : {{ prediction }}</h3>
+  </div>
+
+  <div *ngIf="error" class="error">
+    {{ error }}
+  </div>
+</div>

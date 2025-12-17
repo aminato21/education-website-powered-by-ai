@@ -1,0 +1,28 @@
+<!-- Collapsible Sidebar -->
+<div class="sidebar">
+  <div class="sidebar-logo" routerLink="/">🎓<span class="logo-text">StudentAI</span></div>
+  <nav class="sidebar-links">
+    <a
+      routerLink="/"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="sidebar-link"
+    >
+      <span class="icon">🏠</span><span class="label">Dashboard</span>
+    </a>
+    <a routerLink="/tasks" routerLinkActive="active" class="sidebar-link">
+      <span class="icon">📋</span><span class="label">Tasks</span>
+    </a>
+    <a routerLink="/grades" routerLinkActive="active" class="sidebar-link">
+      <span class="icon">📚</span><span class="label">Grades</span>
+    </a>
+    <a routerLink="/orientation" routerLinkActive="active" class="sidebar-link">
+      <span class="icon">🎯</span><span class="label">Orientation</span>
+    </a>
+  </nav>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+  <router-outlet></router-outlet>
+</div>

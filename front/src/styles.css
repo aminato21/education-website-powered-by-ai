@@ -1,0 +1,86 @@
+/* Global Dark Mode Styles */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg-primary: #0f0f1a;
+  --bg-secondary: #1a1a2e;
+  --bg-card: #16213e;
+  --text-primary: #eaeaea;
+  --text-secondary: #a0a0a0;
+  --accent: #667eea;
+  --accent-hover: #5a6fd6;
+  --success: #27ae60;
+  --warning: #f39c12;
+  --danger: #e74c3c;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+/* Global card styling for all components */
+.container, .dashboard-container {
+  color: var(--text-primary);
+}
+
+h1, h2, h3, h4 {
+  color: var(--text-primary);
+}
+
+/* Form inputs */
+input, select, textarea {
+  background-color: var(--bg-secondary);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text-primary);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--text-secondary);
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* Buttons */
+button {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Modal overlays */
+.modal-overlay {
+  background: rgba(0,0,0,0.7) !important;
+}
+
+.modal-content {
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Labels */
+label {
+  color: var(--text-secondary);
+}
+
+/* Date input calendar icon - make visible on dark backgrounds */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+  opacity: 0.8;
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
