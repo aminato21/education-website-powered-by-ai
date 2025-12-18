@@ -1,6 +1,8 @@
 <!-- Collapsible Sidebar -->
 <div class="sidebar">
-  <div class="sidebar-logo" routerLink="/">🎓<span class="logo-text">StudentAI</span></div>
+  <div class="sidebar-logo" routerLink="/">
+    <i class="material-icons">school</i><span class="logo-text">StudentAI</span>
+  </div>
   <nav class="sidebar-links">
     <a
       routerLink="/"
@@ -8,16 +10,20 @@
       [routerLinkActiveOptions]="{ exact: true }"
       class="sidebar-link"
     >
-      <span class="icon">🏠</span><span class="label">Dashboard</span>
+      <span class="icon"><i class="material-icons">dashboard</i></span
+      ><span class="label">Dashboard</span>
     </a>
     <a routerLink="/tasks" routerLinkActive="active" class="sidebar-link">
-      <span class="icon">📋</span><span class="label">Tasks</span>
+      <span class="icon"><i class="material-icons">assignment</i></span
+      ><span class="label">Tasks</span>
     </a>
     <a routerLink="/grades" routerLinkActive="active" class="sidebar-link">
-      <span class="icon">📚</span><span class="label">Grades</span>
+      <span class="icon"><i class="material-icons">auto_stories</i></span
+      ><span class="label">Grades</span>
     </a>
     <a routerLink="/orientation" routerLinkActive="active" class="sidebar-link">
-      <span class="icon">🎯</span><span class="label">Orientation</span>
+      <span class="icon"><i class="material-icons">explore</i></span
+      ><span class="label">Orientation</span>
     </a>
   </nav>
 </div>

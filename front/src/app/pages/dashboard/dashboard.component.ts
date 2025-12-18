@@ -15,6 +15,7 @@ export class DashboardComponent implements OnInit {
   summary: DashboardSummary | null = null;
   upcoming: UpcomingData | null = null;
   calendarEvents: CalendarEvent[] = [];
+  completedTasks = 0;
   
   // Task quick view modal
   showTaskModal = false;
@@ -39,6 +40,7 @@ export class DashboardComponent implements OnInit {
   ngOnInit() {
     this.loadSummary();
     this.loadUpcoming();
+    this.loadCompletedTasks();
     this.buildCalendar();
     this.loadCalendarEvents();
   }
@@ -56,6 +58,13 @@ export class DashboardComponent implements OnInit {
   loadUpcoming() {
     this.dashboardService.getUpcoming().subscribe(data => {
       this.upcoming = data;
+      this.cd.detectChanges();
+    });
+  }
+
+  loadCompletedTasks() {
+    this.taskService.getTasks().subscribe(tasks => {
+      this.completedTasks = tasks.filter(t => t.status === 'DONE').length;
       this.cd.detectChanges();
     });
   }
@@ -173,12 +182,12 @@ export class DashboardComponent implements OnInit {
     const prevAvg = this.summary?.yearAverages?.[prevYear] || 0;
     const diff = lastAvg - prevAvg;
     
-    if (diff >= 10) return { icon: '🚀', text: `Amazing progress! You improved by <span>+${diff.toFixed(1)}%</span> from Year ${prevYear} to Year ${lastYear}!` };
-    if (diff >= 5) return { icon: '📈', text: `Great work! You've improved by <span>+${diff.toFixed(1)}%</span> this year.` };
-    if (diff > 0) return { icon: '👍', text: `Steady progress! You're up <span>+${diff.toFixed(1)}%</span> from last year.` };
-    if (diff === 0) return { icon: '📊', text: `Consistent performance. Keep pushing for improvement!` };
-    if (diff > -5) return { icon: '📉', text: `Slight dip of ${diff.toFixed(1)}%. Let's work on getting back up!` };
-    return { icon: '⚠️', text: `Challenging year - down ${Math.abs(diff).toFixed(1)}%. Time to refocus!` };
+    if (diff >= 10) return { icon: 'rocket_launch', text: `Amazing progress! You improved by <span>+${diff.toFixed(1)}%</span> from Year ${prevYear} to Year ${lastYear}!` };
+    if (diff >= 5) return { icon: 'trending_up', text: `Great work! You've improved by <span>+${diff.toFixed(1)}%</span> this year.` };
+    if (diff > 0) return { icon: 'thumb_up', text: `Steady progress! You're up <span>+${diff.toFixed(1)}%</span> from last year.` };
+    if (diff === 0) return { icon: 'show_chart', text: `Consistent performance. Keep pushing for improvement!` };
+    if (diff > -5) return { icon: 'trending_down', text: `Slight dip of ${diff.toFixed(1)}%. Let's work on getting back up!` };
+    return { icon: 'warning', text: `Challenging year - down ${Math.abs(diff).toFixed(1)}%. Time to refocus!` };
   }
 
   // Navigate to grades page filtered by year

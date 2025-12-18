@@ -787,3 +787,172 @@ button.disabled {
     flex-direction: column;
   }
 }
+
+/* ============================================
+   FILTER TABS & SORT BAR
+   ============================================ */
+.filter-sort-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-tab {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #a0a0a0 !important;
+  padding: 10px 18px !important;
+  border-radius: 25px !important;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: none !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-tab:hover {
+  background: rgba(102, 126, 234, 0.15) !important;
+  border-color: rgba(102, 126, 234, 0.3) !important;
+  color: #eaeaea !important;
+  transform: translateY(-2px);
+}
+
+.filter-tab.active {
+  background: linear-gradient(135deg, #667eea, #764ba2) !important;
+  border-color: transparent !important;
+  color: white !important;
+}
+
+.count-badge {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.filter-tab.active .count-badge {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.sort-dropdown {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sort-dropdown label {
+  color: #888;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sort-select {
+  background: rgba(15, 15, 26, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #eaeaea;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sort-select:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+/* ============================================
+   DUE COUNTDOWN BADGE
+   ============================================ */
+.due-countdown {
+  font-size: 0.7rem;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: rgba(243, 156, 18, 0.2);
+  color: #f39c12;
+  font-weight: 600;
+  margin-left: auto;
+}
+
+.due-countdown.urgent {
+  background: rgba(231, 76, 60, 0.2);
+  color: #e74c3c;
+  animation: pulse 2s infinite;
+}
+
+.due-countdown.overdue {
+  background: rgba(231, 76, 60, 0.3);
+  color: #ff6b6b;
+  font-weight: 700;
+}
+
+/* ============================================
+   SUBTASK PROGRESS BAR
+   ============================================ */
+.subtask-progress-bar {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.progress-label {
+  font-size: 0.8rem;
+  color: #888;
+  font-weight: 500;
+}
+
+.progress-percent {
+  font-size: 0.8rem;
+  color: #27ae60;
+  font-weight: 700;
+}
+
+.progress-track {
+  background: rgba(255, 255, 255, 0.08);
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.subtask-progress-bar .progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #27ae60, #2ecc71);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: #666;
+  font-size: 1rem;
+}
+
+.empty-state p {
+  margin: 0;
+}
+

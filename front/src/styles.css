@@ -189,3 +189,59 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   opacity: 1;
 }
 
+/* ============================================
+   MATERIAL ICONS STYLING
+   ============================================ */
+.material-icons {
+  font-size: inherit;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+/* Header icons - larger size */
+.header-icon {
+  font-size: 1.5em;
+  margin-right: 8px;
+  color: var(--accent);
+}
+
+/* Inline icons - for text alongside icons */
+.inline-icon {
+  font-size: 1.1em;
+  margin-right: 4px;
+  opacity: 0.8;
+  vertical-align: -2px;
+}
+
+/* Card icons */
+.card-icon .material-icons {
+  font-size: 2rem;
+}
+
+/* Button icons */
+button .material-icons {
+  font-size: 1.2rem;
+  vertical-align: -3px;
+}
+
+/* Sidebar icons */
+.sidebar .material-icons {
+  font-size: 1.4rem;
+}
+
+/* Quick link icons */
+.quick-link .material-icons {
+  font-size: 1.2rem;
+  margin-right: 6px;
+}
+
+/* Widget header icons - consistent sizing */
+.widget-header h3 .material-icons,
+.widget-header .material-icons {
+  font-size: 1.3rem;
+  margin-right: 8px;
+  vertical-align: -3px;
+  color: var(--accent);
+}
+
+

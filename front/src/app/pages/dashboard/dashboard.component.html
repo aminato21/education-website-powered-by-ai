@@ -1,10 +1,10 @@
 <div class="dashboard-container">
-  <h1>🎓 StudentAI Dashboard</h1>
+  <h1><i class="material-icons header-icon">school</i> StudentAI Dashboard</h1>
 
-  <!-- SUMMARY CARDS -->
+  <!-- SUMMARY CARDS - 4 COLUMNS -->
   <div class="summary-cards">
     <div class="card focus-card">
-      <div class="card-icon">🚀</div>
+      <div class="card-icon"><i class="material-icons">rocket_launch</i></div>
       <div class="card-content">
         <span class="card-label">Weekly Focus</span>
         <span class="card-value">{{ summary?.weeklyHours || 0 }}h / 20h</span>
@@ -18,7 +18,7 @@
     </div>
 
     <div class="card avg-card">
-      <div class="card-icon">📚</div>
+      <div class="card-icon"><i class="material-icons">auto_stories</i></div>
       <div class="card-content">
         <span class="card-label">Overall Average</span>
         <span class="card-value" *ngIf="getYearKeys().length > 0">
@@ -28,8 +28,16 @@
       </div>
     </div>
 
+    <div class="card completed-card">
+      <div class="card-icon"><i class="material-icons">check_circle</i></div>
+      <div class="card-content">
+        <span class="card-label">Completed</span>
+        <span class="card-value">{{ completedTasks }} tasks</span>
+      </div>
+    </div>
+
     <div class="card upcoming-card" routerLink="/tasks">
-      <div class="card-icon">📅</div>
+      <div class="card-icon"><i class="material-icons">event</i></div>
       <div class="card-content">
         <span class="card-label">Upcoming</span>
         <span class="card-value"
@@ -41,145 +49,176 @@
 
   <!-- EVOLUTION COMMENT -->
   <div class="evolution-comment" *ngIf="getEvolutionComment()">
-    <span class="evolution-icon">{{ getEvolutionComment()?.icon }}</span>
+    <span class="evolution-icon"
+      ><i class="material-icons">{{ getEvolutionComment()?.icon }}</i></span
+    >
     <span class="evolution-text" [innerHTML]="getEvolutionComment()?.text"></span>
   </div>
 
   <!-- CHARTS ROW -->
   <div class="charts-row">
-    <!-- Year Evolution -->
-    <div class="chart-card">
-      <h3>📊 Grade Evolution by Year</h3>
-      <div class="bar-chart">
-        <div *ngFor="let year of getYearKeys()" class="bar-row" (click)="goToYear(year)">
-          <span class="bar-label">Year {{ year }}</span>
-          <div class="bar-track">
-            <div
-              class="bar-fill"
-              [style.width.%]="getBarWidth(summary?.yearAverages?.[year] || 0)"
-              [style.background-color]="getGradeColor(summary?.yearAverages?.[year] || 0)"
-            ></div>
-          </div>
-          <span class="bar-value">{{ (summary?.yearAverages?.[year] || 0).toFixed(1) }}%</span>
-        </div>
-        <p *ngIf="getYearKeys().length === 0" class="empty-hint">
-          Add subjects and exams to see your progress
-        </p>
+    <!-- Year Evolution Widget -->
+    <article class="widget-card">
+      <div class="widget-header">
+        <h3><i class="material-icons">trending_up</i> Grade Evolution by Year</h3>
+        <a routerLink="/grades" class="widget-action">View All →</a>
       </div>
-    </div>
-
-    <!-- Subject Comparison -->
-    <div class="chart-card">
-      <h3>📈 Subject Comparison</h3>
-      <div class="subject-chart">
-        <div *ngFor="let subj of getSubjectKeys()" class="subject-row">
-          <span class="subject-label">{{ formatSubjectName(subj) }}</span>
-          <div class="subject-bars">
-            <div *ngFor="let year of getYearKeys()" class="mini-bar-container">
+      <div class="widget-body">
+        <div class="bar-chart">
+          <div *ngFor="let year of getYearKeys()" class="bar-row" (click)="goToYear(year)">
+            <span class="bar-label">Year {{ year }}</span>
+            <div class="bar-track">
               <div
-                class="mini-bar"
-                [style.height.px]="(summary?.subjectComparison?.[subj]?.[year] || 0)"
-                [style.background-color]="getGradeColor(summary?.subjectComparison?.[subj]?.[year] || 0)"
-                [title]="'Year ' + year + ': ' + (summary?.subjectComparison?.[subj]?.[year] || 0).toFixed(1) + '%'"
+                class="bar-fill"
+                [style.width.%]="getBarWidth(summary?.yearAverages?.[year] || 0)"
+                [style.background-color]="getGradeColor(summary?.yearAverages?.[year] || 0)"
               ></div>
-              <span class="year-mark">Y{{ year }}</span>
+            </div>
+            <span class="bar-value">{{ (summary?.yearAverages?.[year] || 0).toFixed(1) }}%</span>
+          </div>
+          <p *ngIf="getYearKeys().length === 0" class="empty-hint">
+            Add subjects and exams to see your progress
+          </p>
+        </div>
+      </div>
+    </article>
+
+    <!-- Subject Comparison Widget -->
+    <article class="widget-card">
+      <div class="widget-header">
+        <h3><i class="material-icons">bar_chart</i> Subject Comparison</h3>
+        <a routerLink="/grades" class="widget-action">Details →</a>
+      </div>
+      <div class="widget-body">
+        <div class="subject-chart">
+          <div *ngFor="let subj of getSubjectKeys()" class="subject-row">
+            <span class="subject-label">{{ formatSubjectName(subj) }}</span>
+            <div class="subject-bars">
+              <div *ngFor="let year of getYearKeys()" class="mini-bar-container">
+                <div
+                  class="mini-bar"
+                  [style.height.px]="(summary?.subjectComparison?.[subj]?.[year] || 0)"
+                  [style.background-color]="getGradeColor(summary?.subjectComparison?.[subj]?.[year] || 0)"
+                  [title]="'Year ' + year + ': ' + (summary?.subjectComparison?.[subj]?.[year] || 0).toFixed(1) + '%'"
+                ></div>
+                <span class="year-mark">Y{{ year }}</span>
+              </div>
             </div>
           </div>
+          <p *ngIf="getSubjectKeys().length === 0" class="empty-hint">
+            No subjects with grades yet
+          </p>
         </div>
-        <p *ngIf="getSubjectKeys().length === 0" class="empty-hint">No subjects with grades yet</p>
       </div>
-    </div>
+    </article>
   </div>
 
   <!-- UPCOMING & CALENDAR ROW -->
   <div class="bottom-row">
-    <!-- Upcoming Tasks & Exams -->
-    <div class="upcoming-card-full">
-      <h3>⏰ Upcoming This Week</h3>
-
-      <div class="upcoming-list">
-        <div
-          *ngFor="let task of upcoming?.tasks"
-          class="upcoming-item task-item"
-          (click)="viewTask(task.id)"
-        >
-          <span
-            class="priority-dot"
-            [style.background-color]="getPriorityColor(task.priority)"
-          ></span>
-          <span class="item-title">{{ task.title }}</span>
-          <span class="item-date">📅 {{ task.dueDate }}</span>
-          <span class="item-hours">⏱ {{ task.estimatedHours }}h</span>
-        </div>
-
-        <div *ngFor="let exam of upcoming?.exams" class="upcoming-item exam-item">
-          <span class="priority-dot exam-dot"></span>
-          <span class="item-title">{{ exam.subjectName }}: {{ exam.examName }}</span>
-          <span class="item-date">📅 {{ exam.date }}</span>
-          <span class="item-type">{{ exam.type }}</span>
-        </div>
-
-        <p
-          *ngIf="(upcoming?.tasks?.length || 0) + (upcoming?.exams?.length || 0) === 0"
-          class="empty-hint"
-        >
-          Nothing due this week! 🎉
-        </p>
+    <!-- Upcoming Tasks & Exams Widget -->
+    <article class="widget-card">
+      <div class="widget-header">
+        <h3><i class="material-icons">schedule</i> Upcoming This Week</h3>
+        <a routerLink="/tasks" class="widget-action">All Tasks →</a>
       </div>
-    </div>
-
-    <!-- Calendar -->
-    <div class="calendar-card">
-      <div class="calendar-header">
-        <button (click)="prevMonth()">◀</button>
-        <h3>{{ monthNames[currentMonth - 1] }} {{ currentYear }}</h3>
-        <button (click)="nextMonth()">▶</button>
-      </div>
-
-      <div class="calendar-grid">
-        <div class="day-header">Sun</div>
-        <div class="day-header">Mon</div>
-        <div class="day-header">Tue</div>
-        <div class="day-header">Wed</div>
-        <div class="day-header">Thu</div>
-        <div class="day-header">Fri</div>
-        <div class="day-header">Sat</div>
-
-        <div
-          *ngFor="let day of calendarDays"
-          class="calendar-day"
-          [class.empty]="!day"
-          [class.today]="day && isToday(day)"
-          [class.has-events]="day && getEventsForDay(day).length > 0"
-        >
-          <span class="day-number" *ngIf="day">{{ day }}</span>
-          <div class="event-dots" *ngIf="day">
+      <div class="widget-body">
+        <div class="upcoming-list">
+          <div
+            *ngFor="let task of upcoming?.tasks"
+            class="upcoming-item task-item"
+            (click)="viewTask(task.id)"
+          >
             <span
-              *ngFor="let e of getEventsForDay(day).slice(0, 4)"
-              class="event-dot"
-              [class.task-dot]="e.type === 'task'"
-              [class.subtask-dot]="e.type === 'subtask'"
-              [class.exam-dot]="e.type === 'exam'"
-              [title]="e.title"
+              class="priority-dot"
+              [style.background-color]="getPriorityColor(task.priority)"
+            ></span>
+            <span class="item-title">{{ task.title }}</span>
+            <span class="item-date"
+              ><i class="material-icons inline-icon">event</i> {{ task.dueDate }}</span
             >
-            </span>
+            <span class="item-hours"
+              ><i class="material-icons inline-icon">schedule</i> {{ task.estimatedHours }}h</span
+            >
+          </div>
+
+          <div *ngFor="let exam of upcoming?.exams" class="upcoming-item exam-item">
+            <span class="priority-dot exam-dot"></span>
+            <span class="item-title">{{ exam.subjectName }}: {{ exam.examName }}</span>
+            <span class="item-date"
+              ><i class="material-icons inline-icon">event</i> {{ exam.date }}</span
+            >
+            <span class="item-type">{{ exam.type }}</span>
+          </div>
+
+          <p
+            *ngIf="(upcoming?.tasks?.length || 0) + (upcoming?.exams?.length || 0) === 0"
+            class="empty-hint"
+          >
+            Nothing due this week! 🎉
+          </p>
+        </div>
+      </div>
+    </article>
+
+    <!-- Calendar Widget -->
+    <article class="widget-card calendar-widget">
+      <div class="widget-header">
+        <button (click)="prevMonth()" class="calendar-nav-btn">◀</button>
+        <h3>{{ monthNames[currentMonth - 1] }} {{ currentYear }}</h3>
+        <button (click)="nextMonth()" class="calendar-nav-btn">▶</button>
+      </div>
+      <div class="widget-body">
+        <div class="calendar-grid">
+          <div class="day-header">Sun</div>
+          <div class="day-header">Mon</div>
+          <div class="day-header">Tue</div>
+          <div class="day-header">Wed</div>
+          <div class="day-header">Thu</div>
+          <div class="day-header">Fri</div>
+          <div class="day-header">Sat</div>
+
+          <div
+            *ngFor="let day of calendarDays"
+            class="calendar-day"
+            [class.empty]="!day"
+            [class.today]="day && isToday(day)"
+            [class.has-events]="day && getEventsForDay(day).length > 0"
+          >
+            <span class="day-number" *ngIf="day">{{ day }}</span>
+            <div class="event-dots" *ngIf="day">
+              <span
+                *ngFor="let e of getEventsForDay(day).slice(0, 4)"
+                class="event-dot"
+                [class.task-dot]="e.type === 'task'"
+                [class.subtask-dot]="e.type === 'subtask'"
+                [class.exam-dot]="e.type === 'exam'"
+                [title]="e.title"
+              >
+              </span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="calendar-legend">
-        <span><span class="legend-dot task-dot"></span> Task</span>
-        <span><span class="legend-dot subtask-dot"></span> Subtask</span>
-        <span><span class="legend-dot exam-dot"></span> Exam</span>
+        <div class="calendar-legend">
+          <span><span class="legend-dot task-dot"></span> Task</span>
+          <span><span class="legend-dot subtask-dot"></span> Subtask</span>
+          <span><span class="legend-dot exam-dot"></span> Exam</span>
+        </div>
       </div>
-    </div>
+    </article>
   </div>
 
   <!-- Quick Links -->
   <div class="quick-links">
-    <a routerLink="/tasks" class="quick-link">📋 Task Board</a>
-    <a routerLink="/grades" class="quick-link">📚 Gradebook</a>
-    <a routerLink="/orientation" class="quick-link">🎯 Orientation</a>
+    <a routerLink="/tasks" class="quick-link"
+      ><i class="material-icons">assignment</i> Task Board</a
+    >
+    <a routerLink="/grades" class="quick-link"
+      ><i class="material-icons">auto_stories</i> Gradebook</a
+    >
+    <a routerLink="/orientation" class="quick-link"
+      ><i class="material-icons">explore</i> Orientation</a
+    >
   </div>
 </div>
 
@@ -199,8 +238,13 @@
     </div>
 
     <div class="task-view-meta">
-      <span *ngIf="viewingTask?.dueDate">📅 Due: {{ viewingTask?.dueDate }}</span>
-      <span>⏱ {{ viewingTask?.estimatedHours }}h estimated</span>
+      <span *ngIf="viewingTask?.dueDate"
+        ><i class="material-icons inline-icon">event</i> Due: {{ viewingTask?.dueDate }}</span
+      >
+      <span
+        ><i class="material-icons inline-icon">schedule</i> {{ viewingTask?.estimatedHours }}h
+        estimated</span
+      >
       <span class="status-badge" [class]="viewingTask?.status">{{ viewingTask?.status }}</span>
     </div>
 

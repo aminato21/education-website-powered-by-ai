@@ -29,8 +29,8 @@ h1 {
    ============================================ */
 .summary-cards {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
   margin-bottom: 2rem;
 }
 
@@ -114,6 +114,14 @@ h1 {
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(39, 174, 96, 0.2);
 }
 
+.completed-card {
+  border-left: 4px solid #f39c12;
+  box-shadow: inset 4px 0 20px rgba(243, 156, 18, 0.15);
+}
+.completed-card:hover {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(243, 156, 18, 0.2);
+}
+
 .upcoming-card { 
   border-left: 4px solid #9b59b6;
   box-shadow: inset 4px 0 20px rgba(155, 89, 182, 0.15);
@@ -195,6 +203,63 @@ h1 {
   margin-bottom: 2rem;
 }
 
+/* Widget Card - Unified Structure */
+.widget-card {
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.9) 0%, rgba(22, 33, 62, 0.7) 100%);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  animation: fadeInUp 0.5s ease 0.15s both;
+  transition: box-shadow 0.3s ease;
+  overflow: hidden;
+}
+
+.widget-card:hover {
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+.widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.2rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.widget-header h3 {
+  margin: 0;
+  color: #eaeaea;
+  font-size: 1.05rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: -0.3px;
+}
+
+.widget-action {
+  font-size: 0.82rem;
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 8px;
+  background: rgba(102, 126, 234, 0.1);
+  transition: all 0.25s ease;
+}
+
+.widget-action:hover {
+  background: rgba(102, 126, 234, 0.2);
+  color: #7c94f4;
+  transform: translateX(3px);
+}
+
+.widget-body {
+  padding: 1.5rem;
+}
+
+/* Legacy chart-card support */
 .chart-card {
   background: linear-gradient(135deg, rgba(26, 26, 46, 0.9) 0%, rgba(22, 33, 62, 0.7) 100%);
   backdrop-filter: blur(10px);
@@ -916,3 +981,103 @@ h1 {
   transform: translateY(-3px) scale(1.02);
   box-shadow: 0 10px 30px rgba(102, 126, 234, 0.45);
 }
+
+/* ============================================
+   CALENDAR WIDGET ADJUSTMENTS
+   ============================================ */
+.calendar-widget .widget-header {
+  justify-content: space-between;
+}
+
+.calendar-nav-btn {
+  background: rgba(30, 30, 50, 0.9) !important;
+  border: 1px solid rgba(102, 126, 234, 0.3) !important;
+  color: #a0a0a0 !important;
+  padding: 8px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  box-shadow: none !important;
+}
+
+.calendar-nav-btn:hover {
+  background: rgba(102, 126, 234, 0.25) !important;
+  color: #eaeaea !important;
+  transform: scale(1.05);
+  border-color: rgba(102, 126, 234, 0.5) !important;
+}
+
+/* ============================================
+   RESPONSIVE BREAKPOINTS
+   ============================================ */
+
+/* Tablet: 2 columns for stat cards */
+@media (max-width: 900px) {
+  .summary-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .charts-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .bottom-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Mobile: 1 column for all */
+@media (max-width: 600px) {
+  .dashboard-container {
+    padding: 1rem;
+  }
+  
+  h1 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .summary-cards {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  
+  .card {
+    padding: 1.2rem;
+  }
+  
+  .card-icon {
+    font-size: 2rem;
+  }
+  
+  .card-value {
+    font-size: 1.4rem;
+  }
+  
+  .quick-links {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .quick-link {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .widget-header {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+  
+  .calendar-grid {
+    gap: 4px;
+  }
+  
+  .calendar-day {
+    min-height: 45px;
+    font-size: 0.8rem;
+  }
+}
+

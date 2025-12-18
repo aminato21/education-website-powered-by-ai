@@ -1,11 +1,12 @@
 <div class="container">
-  <h2>📚 Gradebook</h2>
+  <h2><i class="material-icons header-icon">auto_stories</i> Gradebook</h2>
 
   <!-- Year Filter Indicator -->
   <div class="filter-indicator" *ngIf="filterYear">
     <span>Showing Year {{ filterYear }} only</span>
     <button class="clear-filter-btn" (click)="clearYearFilter()">✕ Show All Years</button>
   </div>
+
   <!-- Year Averages Summary -->
   <div class="year-summary-card">
     <h3>Year Averages</h3>
@@ -26,16 +27,54 @@
     </div>
   </div>
 
-  <!-- Add Subject Button -->
+  <!-- Action Bar with Search -->
   <div class="action-bar">
+    <div class="search-box">
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        placeholder="🔍 Search subjects..."
+        class="search-input"
+      />
+    </div>
     <button class="add-subject-btn" (click)="openAddSubject()">+ Add Subject</button>
   </div>
 
-  <!-- Subjects by Year -->
+  <!-- Subjects by Year - Collapsible -->
   <div *ngFor="let year of getUniqueYears()" class="year-section">
-    <h3 class="year-heading">Year {{ year }}</h3>
+    <div class="year-heading-row" (click)="toggleYearCollapse(year)">
+      <h3 class="year-heading">
+        <span class="collapse-icon">{{ isYearCollapsed(year) ? '▶' : '▼' }}</span>
+        Year {{ year }}
+        <span class="subject-count">({{ getSubjectsByYear(year).length }} subjects)</span>
+      </h3>
+    </div>
 
-    <div class="subject-grid">
+    <!-- Stats Bar PER YEAR (inside the year section) -->
+    <div class="stats-bar year-stats" *ngIf="!isYearCollapsed(year)">
+      <div class="stat-item">
+        <span class="stat-value">{{ getStatsForYear(year).totalSubjects }}</span>
+        <span class="stat-label">Subjects</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">{{ getStatsForYear(year).totalExams }}</span>
+        <span class="stat-label">Exams</span>
+      </div>
+      <div class="stat-item best" *ngIf="getStatsForYear(year).bestSubject">
+        <span class="stat-value">{{ getStatsForYear(year).bestSubject?.name }}</span>
+        <span class="stat-label"
+          >🏆 Best ({{ formatAverage(getStatsForYear(year).bestSubject?.avg) }})</span
+        >
+      </div>
+      <div class="stat-item worst" *ngIf="getStatsForYear(year).worstSubject">
+        <span class="stat-value">{{ getStatsForYear(year).worstSubject?.name }}</span>
+        <span class="stat-label"
+          >⚠️ Needs Work ({{ formatAverage(getStatsForYear(year).worstSubject?.avg) }})</span
+        >
+      </div>
+    </div>
+
+    <div class="subject-grid" *ngIf="!isYearCollapsed(year)">
       <div
         *ngFor="let subject of getSubjectsByYear(year)"
         class="subject-card"
@@ -49,13 +88,27 @@
           </span>
         </div>
         <div class="subject-meta">
-          <span *ngIf="subject.teacher">👤 {{ subject.teacher }}</span>
-          <span>📝 {{ subject.exams?.length || 0 }} exams</span>
+          <span *ngIf="subject.teacher"
+            ><i class="material-icons inline-icon">person</i> {{ subject.teacher }}</span
+          >
+          <span
+            ><i class="material-icons inline-icon">description</i>
+            {{ subject.exams?.length || 0 }} exams</span
+          >
         </div>
         <div class="subject-actions" (click)="$event.stopPropagation()">
-          <button class="edit-btn" (click)="openEditSubject(subject)">✎</button>
-          <button class="delete-btn" (click)="deleteSubject(subject)">🗑</button>
+          <button class="edit-btn" (click)="openEditSubject(subject)">
+            <i class="material-icons">edit</i>
+          </button>
+          <button class="delete-btn" (click)="deleteSubject(subject)">
+            <i class="material-icons">delete</i>
+          </button>
         </div>
+      </div>
+
+      <!-- No results for search -->
+      <div *ngIf="getSubjectsByYear(year).length === 0 && searchQuery" class="no-results">
+        No subjects match "{{ searchQuery }}"
       </div>
     </div>
   </div>
@@ -142,7 +195,9 @@
 
       <p class="subject-detail-meta">
         Year {{ selectedSubject.year }}
-        <span *ngIf="selectedSubject.teacher"> • 👤 {{ selectedSubject.teacher }}</span>
+        <span *ngIf="selectedSubject.teacher">
+          • <i class="material-icons inline-icon">person</i> {{ selectedSubject.teacher }}</span
+        >
       </p>
 
       <div class="exams-section">
@@ -180,8 +235,12 @@
                 </span>
               </td>
               <td>
-                <button class="edit-btn small" (click)="openEditExam(exam)">✎</button>
-                <button class="delete-btn small" (click)="deleteExam(exam)">🗑</button>
+                <button class="edit-btn small" (click)="openEditExam(exam)">
+                  <i class="material-icons">edit</i>
+                </button>
+                <button class="delete-btn small" (click)="deleteExam(exam)">
+                  <i class="material-icons">delete</i>
+                </button>
               </td>
             </tr>
           </tbody>
@@ -237,7 +296,8 @@
       </div>
 
       <p class="info-msg" *ngIf="!isExamDatePassed()">
-        📅 Grade inputs will appear after the exam date.
+        <i class="material-icons inline-icon">event</i> Grade inputs will appear after the exam
+        date.
       </p>
 
       <div class="modal-actions">

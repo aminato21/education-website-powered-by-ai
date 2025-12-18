@@ -601,3 +601,184 @@ label {
     padding: 10px 12px;
   }
 }
+
+/* ============================================
+   STATS SUMMARY BAR
+   ============================================ */
+.stats-bar {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.stat-item {
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.8) 0%, rgba(22, 33, 62, 0.6) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 14px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 100px;
+  flex: 1;
+}
+
+.stat-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #eaeaea;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+}
+
+.stat-item.best {
+  border-color: rgba(39, 174, 96, 0.3);
+  background: linear-gradient(135deg, rgba(39, 174, 96, 0.1) 0%, rgba(26, 26, 46, 0.8) 100%);
+}
+
+.stat-item.best .stat-value {
+  color: #27ae60;
+}
+
+.stat-item.worst {
+  border-color: rgba(231, 76, 60, 0.3);
+  background: linear-gradient(135deg, rgba(231, 76, 60, 0.1) 0%, rgba(26, 26, 46, 0.8) 100%);
+}
+
+.stat-item.worst .stat-value {
+  color: #e74c3c;
+}
+
+/* Per-year stats bar - more compact */
+.stats-bar.year-stats {
+  margin-bottom: 1rem;
+  padding: 8px 0;
+}
+
+.stats-bar.year-stats .stat-item {
+  padding: 10px 16px;
+  min-width: 80px;
+}
+
+.stats-bar.year-stats .stat-value {
+  font-size: 1.1rem;
+}
+
+.stats-bar.year-stats .stat-label {
+  font-size: 0.7rem;
+}
+
+/* ============================================
+   SEARCH INPUT
+   ============================================ */
+.action-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.search-box {
+  flex: 1;
+  min-width: 200px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(15, 15, 26, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #eaeaea;
+  font-size: 0.95rem;
+  transition: all 0.25s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+.search-input::placeholder {
+  color: #666;
+}
+
+/* ============================================
+   COLLAPSIBLE YEAR SECTIONS
+   ============================================ */
+.year-heading-row {
+  cursor: pointer;
+  padding: 8px 0;
+  transition: opacity 0.2s ease;
+}
+
+.year-heading-row:hover {
+  opacity: 0.8;
+}
+
+.year-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #eaeaea;
+  margin: 0 0 1rem 0;
+  font-size: 1.2rem;
+}
+
+.collapse-icon {
+  font-size: 0.8rem;
+  color: #888;
+  transition: transform 0.3s ease;
+}
+
+.subject-count {
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: 400;
+}
+
+.no-results {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  font-style: italic;
+}
+
+/* ============================================
+   STRIPED EXAMS TABLE ENHANCEMENT
+   ============================================ */
+.exams-table tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.exams-table tbody tr:nth-child(odd) {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.exams-table .grade-cell {
+  font-weight: 700;
+}
+
+.exams-table .grade-cell.good {
+  color: #27ae60;
+}
+
+.exams-table .grade-cell.average {
+  color: #f39c12;
+}
+
+.exams-table .grade-cell.poor {
+  color: #e74c3c;
+}
+

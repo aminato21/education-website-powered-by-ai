@@ -30,6 +30,10 @@ export class TasksComponent implements OnInit {
   // Analytics
   weeklyHours = 0;
 
+  // NEW: Filtering & Sorting
+  activeFilter: string = 'ALL';
+  sortBy: string = 'dueDate'; // 'dueDate' | 'priority' | 'title'
+
   constructor(private taskService: TaskService, private cd: ChangeDetectorRef) {}
 
   ngOnInit() {
@@ -49,6 +53,63 @@ export class TasksComponent implements OnInit {
       this.weeklyHours = h; 
       this.cd.detectChanges();
     });
+  }
+
+  // NEW: Filtered and sorted tasks
+  getFilteredTasks(): Task[] {
+    let filtered = this.tasks;
+    
+    // Apply status filter
+    if (this.activeFilter !== 'ALL') {
+      filtered = filtered.filter(t => t.status === this.activeFilter);
+    }
+    
+    // Apply sorting
+    return filtered.sort((a, b) => {
+      if (this.sortBy === 'priority') {
+        const order = { HIGH: 0, MEDIUM: 1, LOW: 2 };
+        return (order[a.priority] || 2) - (order[b.priority] || 2);
+      }
+      if (this.sortBy === 'title') {
+        return a.title.localeCompare(b.title);
+      }
+      // Default: dueDate
+      const aDate = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
+      const bDate = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
+      return aDate - bDate;
+    });
+  }
+
+  setFilter(status: string) {
+    this.activeFilter = status;
+  }
+
+  getTaskCount(status: string): number {
+    if (status === 'ALL') return this.tasks.length;
+    return this.tasks.filter(t => t.status === status).length;
+  }
+
+  // NEW: Due date countdown for task cards
+  getDaysUntilDueForTask(task: Task): string {
+    if (!task.dueDate) return '';
+    const due = new Date(task.dueDate);
+    const now = new Date();
+    const days = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (days < 0) return 'Overdue';
+    if (days === 0) return 'Due today';
+    if (days === 1) return 'Due tomorrow';
+    if (days <= 3) return `Due in ${days} days`;
+    return '';
+  }
+
+  // NEW: Subtask progress for cards
+  getSubtaskProgress(task: Task): { done: number; total: number; percent: number } {
+    const subtasks = task.subTasks || [];
+    const total = subtasks.length;
+    const done = subtasks.filter(st => st.status === 'DONE').length;
+    const percent = total > 0 ? Math.round((done / total) * 100) : 0;
+    return { done, total, percent };
   }
 
   // --- Add Task Logic ---

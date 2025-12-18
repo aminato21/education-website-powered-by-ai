@@ -1,10 +1,10 @@
 <div class="container">
-  <h2>📋 Student Workspace</h2>
+  <h2><i class="material-icons header-icon">assignment</i> Student Workspace</h2>
 
   <!-- Productivity Widget -->
   <div class="productivity-card">
     <div class="prod-header">
-      <h3>🚀 Weekly Focus</h3>
+      <h3><i class="material-icons">rocket_launch</i> Weekly Focus</h3>
       <span class="hours-badge">{{ weeklyHours }}h / 20h Goal</span>
     </div>
     <div class="progress-bar">
@@ -79,32 +79,94 @@
     </div>
   </div>
 
-  <!-- Kanban-ish / List View -->
+  <!-- Filter Tabs & Sort -->
+  <div class="filter-sort-bar">
+    <div class="filter-tabs">
+      <button class="filter-tab" [class.active]="activeFilter === 'ALL'" (click)="setFilter('ALL')">
+        All <span class="count-badge">{{ getTaskCount('ALL') }}</span>
+      </button>
+      <button
+        class="filter-tab"
+        [class.active]="activeFilter === 'TODO'"
+        (click)="setFilter('TODO')"
+      >
+        To Do <span class="count-badge">{{ getTaskCount('TODO') }}</span>
+      </button>
+      <button
+        class="filter-tab"
+        [class.active]="activeFilter === 'IN_PROGRESS'"
+        (click)="setFilter('IN_PROGRESS')"
+      >
+        In Progress <span class="count-badge">{{ getTaskCount('IN_PROGRESS') }}</span>
+      </button>
+      <button
+        class="filter-tab"
+        [class.active]="activeFilter === 'DONE'"
+        (click)="setFilter('DONE')"
+      >
+        Done <span class="count-badge">{{ getTaskCount('DONE') }}</span>
+      </button>
+    </div>
+    <div class="sort-dropdown">
+      <label>Sort:</label>
+      <select [(ngModel)]="sortBy" class="sort-select">
+        <option value="dueDate">Due Date</option>
+        <option value="priority">Priority</option>
+        <option value="title">Title</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Task List -->
   <div class="task-list">
-    <!-- ADDED CLICK HANDLER HERE -->
-    <div *ngFor="let task of tasks" class="task-card" (click)="openTaskView(task)">
+    <div *ngFor="let task of getFilteredTasks()" class="task-card" (click)="openTaskView(task)">
       <div class="task-header">
         <span class="priority-badge" [style.background-color]="getPriorityColor(task.priority)">
           {{ task.priority }}
         </span>
         <span class="task-title">{{ task.title }}</span>
+        <!-- Due countdown badge -->
+        <span
+          class="due-countdown"
+          *ngIf="getDaysUntilDueForTask(task)"
+          [class.overdue]="getDaysUntilDueForTask(task) === 'Overdue'"
+          [class.urgent]="
+            getDaysUntilDueForTask(task) === 'Due today' ||
+            getDaysUntilDueForTask(task) === 'Due tomorrow'
+          "
+        >
+          {{ getDaysUntilDueForTask(task) }}
+        </span>
       </div>
 
       <div class="task-body">
         <div class="meta-row">
-          <span>📅 {{ task.dueDate || 'No Date' }}</span>
-          <span>⏱ {{ task.estimatedHours }}h Est.</span>
+          <span
+            ><i class="material-icons inline-icon">event</i> {{ task.dueDate || 'No Date' }}</span
+          >
+          <span
+            ><i class="material-icons inline-icon">schedule</i> {{ task.estimatedHours }}h
+            Est.</span
+          >
         </div>
         <!-- Description Preview -->
         <p class="task-desc-preview" *ngIf="task.description">
           {{ task.description | slice : 0 : 50 }}{{ task.description!.length > 50 ? '...' : '' }}
         </p>
 
-        <!-- SUBTASKS PREVIEW IN MAIN LIST -->
-        <div *ngIf="task.subTasks && task.subTasks.length > 0" class="subtask-preview">
-          <div *ngFor="let st of task.subTasks" class="st-row">
-            <span class="st-status-dot" [class.done]="st.status === 'DONE'">●</span>
-            <span class="st-title">{{ st.title }}</span>
+        <!-- Subtask Progress Bar -->
+        <div *ngIf="task.subTasks && task.subTasks.length > 0" class="subtask-progress-bar">
+          <div class="progress-info">
+            <span class="progress-label"
+              >✓ {{ getSubtaskProgress(task).done }}/{{
+                getSubtaskProgress(task).total
+              }}
+              subtasks</span
+            >
+            <span class="progress-percent">{{ getSubtaskProgress(task).percent }}%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" [style.width.%]="getSubtaskProgress(task).percent"></div>
           </div>
         </div>
       </div>
@@ -118,8 +180,16 @@
         >
           <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
         </select>
-        <button class="delete-btn" (click)="delete(task)">🗑</button>
+        <button class="delete-btn" (click)="delete(task)">
+          <i class="material-icons">delete</i>
+        </button>
       </div>
+    </div>
+
+    <!-- Empty state -->
+    <div *ngIf="getFilteredTasks().length === 0" class="empty-state">
+      <p *ngIf="tasks.length === 0">No tasks yet. Add your first task above!</p>
+      <p *ngIf="tasks.length > 0">No tasks match the current filter.</p>
     </div>
   </div>
 
@@ -142,8 +212,14 @@
         </div>
 
         <div class="task-view-meta">
-          <span>📅 {{ editTaskData.dueDate || 'No Due Date' }}</span>
-          <span>⏱ {{ editTaskData.estimatedHours }}h Estimated</span>
+          <span
+            ><i class="material-icons inline-icon">event</i>
+            {{ editTaskData.dueDate || 'No Due Date' }}</span
+          >
+          <span
+            ><i class="material-icons inline-icon">schedule</i> {{ editTaskData.estimatedHours }}h
+            Estimated</span
+          >
           <span class="status-badge" [ngClass]="editTaskData.status">{{
             editTaskData.status
           }}</span>
@@ -158,8 +234,12 @@
 
         <!-- View Mode Actions -->
         <div class="view-mode-actions">
-          <button class="edit-btn" (click)="enableEditTask()">✎ Edit Task</button>
-          <button class="delete-btn-full" (click)="delete(editTaskData)">🗑 Delete</button>
+          <button class="edit-btn" (click)="enableEditTask()">
+            <i class="material-icons">edit</i> Edit Task
+          </button>
+          <button class="delete-btn-full" (click)="delete(editTaskData)">
+            <i class="material-icons">delete</i> Delete
+          </button>
         </div>
 
         <!-- SUBTASKS LIST (View Mode) -->
@@ -179,11 +259,18 @@
                   {{ st.priority || 'MEDIUM' }}
                 </span>
                 <strong class="subtask-card-title">{{ st.title }}</strong>
-                <button class="edit-icon-btn" (click)="openSubTaskEdit(st)">✎</button>
+                <button class="edit-icon-btn" (click)="openSubTaskEdit(st)">
+                  <i class="material-icons">edit</i>
+                </button>
               </div>
               <div class="subtask-card-meta">
-                <span>📅 {{ st.dueDate || 'No Date' }}</span>
-                <span>⏱ {{ st.estimatedHours }}h</span>
+                <span
+                  ><i class="material-icons inline-icon">event</i>
+                  {{ st.dueDate || 'No Date' }}</span
+                >
+                <span
+                  ><i class="material-icons inline-icon">schedule</i> {{ st.estimatedHours }}h</span
+                >
               </div>
               <p class="subtask-card-desc" *ngIf="st.description">{{ st.description }}</p>
               <div class="subtask-card-footer">

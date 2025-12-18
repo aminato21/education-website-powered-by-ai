@@ -18,6 +18,12 @@ export class GradesComponent implements OnInit {
   // Year filter from dashboard navigation
   filterYear: number | null = null;
   
+  // NEW: Search filter
+  searchQuery = '';
+  
+  // NEW: Collapsible year sections
+  collapsedYears: Set<number> = new Set();
+  
   // Pre-defined subjects for dropdown
   mlSubjects = ML_SUBJECTS;
   
@@ -86,7 +92,53 @@ export class GradesComponent implements OnInit {
   }
 
   getSubjectsByYear(year: number): Subject[] {
-    return this.subjects.filter(s => s.year === year);
+    let filtered = this.subjects.filter(s => s.year === year);
+    
+    // Apply search filter
+    if (this.searchQuery.trim()) {
+      const query = this.searchQuery.toLowerCase();
+      filtered = filtered.filter(s => 
+        s.name.toLowerCase().includes(query) || 
+        (s.teacher && s.teacher.toLowerCase().includes(query))
+      );
+    }
+    
+    return filtered;
+  }
+
+  // NEW: Toggle year section collapse
+  toggleYearCollapse(year: number) {
+    if (this.collapsedYears.has(year)) {
+      this.collapsedYears.delete(year);
+    } else {
+      this.collapsedYears.add(year);
+    }
+  }
+
+  isYearCollapsed(year: number): boolean {
+    return this.collapsedYears.has(year);
+  }
+
+  // Stats summary per YEAR
+  getStatsForYear(year: number) {
+    const yearSubjects = this.subjects.filter(s => s.year === year);
+    const totalSubjects = yearSubjects.length;
+    const totalExams = yearSubjects.reduce((sum, s) => sum + (s.exams?.length || 0), 0);
+    
+    // Find best and worst subjects for THIS YEAR
+    const subjectsWithAvg = yearSubjects
+      .filter(s => s.average !== undefined && s.average !== null)
+      .sort((a, b) => (b.average || 0) - (a.average || 0));
+    
+    const best = subjectsWithAvg[0];
+    const worst = subjectsWithAvg[subjectsWithAvg.length - 1];
+    
+    return {
+      totalSubjects,
+      totalExams,
+      bestSubject: best ? { name: best.name, avg: best.average } : null,
+      worstSubject: worst && worst !== best ? { name: worst.name, avg: worst.average } : null
+    };
   }
 
   // ===== SUBJECT MODAL =====
