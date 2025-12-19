@@ -1,0 +1,54 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <i class="material-icons">school</i>
+      <h1>Welcome Back</h1>
+      <p>Sign in to your StudentAI account</p>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="auth-form">
+      <div class="form-field">
+        <label>Email</label>
+        <input
+          type="email"
+          [(ngModel)]="email"
+          name="email"
+          placeholder="your@email.com"
+          class="auth-input"
+          [class.invalid]="error && !email"
+        />
+      </div>
+
+      <div class="form-field">
+        <label>Password</label>
+        <input
+          type="password"
+          [(ngModel)]="password"
+          name="password"
+          placeholder="Your password"
+          class="auth-input"
+          [class.invalid]="error && !password"
+        />
+      </div>
+
+      <div class="success-message" *ngIf="success">
+        <i class="material-icons">check_circle</i>
+        {{ success }}
+      </div>
+
+      <div class="error-message" *ngIf="error">
+        <i class="material-icons">error</i>
+        {{ error }}
+      </div>
+
+      <button type="submit" class="auth-btn" [disabled]="loading">
+        <span *ngIf="!loading">Sign In</span>
+        <span *ngIf="loading">Signing in...</span>
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p>Don't have an account? <a routerLink="/register">Sign up</a></p>
+    </div>
+  </div>
+</div>

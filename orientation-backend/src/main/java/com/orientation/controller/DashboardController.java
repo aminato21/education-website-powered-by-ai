@@ -9,6 +9,7 @@ import com.orientation.repository.SubjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -24,17 +25,37 @@ public class DashboardController {
     @Autowired
     private SubjectRepository subjectRepository;
 
+    private Long getUserId(HttpServletRequest request) {
+        String userId = request.getHeader("X-User-Id");
+        if (userId == null || userId.isEmpty())
+            return null;
+        try {
+            return Long.parseLong(userId);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
     @GetMapping("/summary")
-    public Map<String, Object> getDashboardSummary() {
+    public Map<String, Object> getDashboardSummary(HttpServletRequest request) {
+        Long userId = getUserId(request);
         Map<String, Object> summary = new HashMap<>();
 
-        // Weekly Hours (DONE tasks/subtasks)
-        Double taskHours = taskRepository.getTotalTaskHours();
-        Double subTaskHours = taskRepository.getTotalSubTaskHours();
-        summary.put("weeklyHours", (taskHours != null ? taskHours : 0) + (subTaskHours != null ? subTaskHours : 0));
+        if (userId == null)
+            return summary;
 
-        // Year Averages
-        List<Subject> subjects = subjectRepository.findAll();
+        List<Task> tasks = taskRepository.findByUserId(userId);
+        List<Subject> subjects = subjectRepository.findByUserId(userId);
+
+        double taskHours = tasks.stream()
+                .filter(t -> t.getStatus() == TaskStatus.DONE)
+                .mapToDouble(Task::getEstimatedHours).sum();
+        double subTaskHours = tasks.stream()
+                .flatMap(t -> t.getSubTasks().stream())
+                .filter(st -> st.getStatus() == TaskStatus.DONE)
+                .mapToDouble(st -> st.getEstimatedHours()).sum();
+        summary.put("weeklyHours", taskHours + subTaskHours);
+
         Map<Integer, Double> yearAverages = subjects.stream()
                 .filter(s -> s.getAverage() != null)
                 .collect(Collectors.groupingBy(
@@ -42,7 +63,6 @@ public class DashboardController {
                         Collectors.averagingDouble(Subject::getAverage)));
         summary.put("yearAverages", yearAverages);
 
-        // Subject Comparison (by subjectKey across years)
         Map<String, Map<Integer, Double>> subjectComparison = subjects.stream()
                 .filter(s -> s.getAverage() != null && s.getSubjectKey() != null)
                 .collect(Collectors.groupingBy(
@@ -54,27 +74,27 @@ public class DashboardController {
     }
 
     @GetMapping("/upcoming")
-    public Map<String, Object> getUpcoming() {
+    public Map<String, Object> getUpcoming(HttpServletRequest request) {
+        Long userId = getUserId(request);
         Map<String, Object> result = new HashMap<>();
+        if (userId == null)
+            return result;
+
         LocalDate today = LocalDate.now();
         LocalDate nextWeek = today.plusDays(7);
 
-        // Get all tasks and filter/sort
-        List<Task> allTasks = taskRepository.findAll();
+        List<Task> allTasks = taskRepository.findByUserId(userId);
 
-        // Upcoming tasks (due in next 7 days, not DONE, sorted by priority)
         List<Map<String, Object>> upcomingTasks = allTasks.stream()
                 .filter(t -> t.getDueDate() != null &&
                         !t.getDueDate().isBefore(today) &&
                         !t.getDueDate().isAfter(nextWeek) &&
                         t.getStatus() != TaskStatus.DONE)
                 .sorted((a, b) -> {
-                    // HIGH first, then MEDIUM, then LOW
                     int priorityA = getPriorityOrder(a.getPriority().name());
                     int priorityB = getPriorityOrder(b.getPriority().name());
                     if (priorityA != priorityB)
                         return priorityA - priorityB;
-                    // Then by date
                     return a.getDueDate().compareTo(b.getDueDate());
                 })
                 .map(this::taskToMap)
@@ -82,8 +102,7 @@ public class DashboardController {
 
         result.put("tasks", upcomingTasks);
 
-        // Upcoming exams (next 7 days)
-        List<Subject> subjects = subjectRepository.findAll();
+        List<Subject> subjects = subjectRepository.findByUserId(userId);
         List<Map<String, Object>> upcomingExams = subjects.stream()
                 .flatMap(s -> s.getExams().stream().map(e -> {
                     Map<String, Object> exam = new HashMap<>();
@@ -108,15 +127,19 @@ public class DashboardController {
     @GetMapping("/calendar")
     public List<Map<String, Object>> getCalendarEvents(
             @RequestParam int year,
-            @RequestParam int month) {
+            @RequestParam int month,
+            HttpServletRequest request) {
+
+        Long userId = getUserId(request);
+        if (userId == null)
+            return List.of();
 
         LocalDate start = LocalDate.of(year, month, 1);
         LocalDate end = start.plusMonths(1).minusDays(1);
 
         List<Map<String, Object>> events = new ArrayList<>();
 
-        // Tasks
-        List<Task> tasks = taskRepository.findAll();
+        List<Task> tasks = taskRepository.findByUserId(userId);
         for (Task t : tasks) {
             if (t.getDueDate() != null &&
                     !t.getDueDate().isBefore(start) &&
@@ -131,7 +154,6 @@ public class DashboardController {
                 events.add(event);
             }
 
-            // Add subtasks to calendar
             if (t.getSubTasks() != null) {
                 for (var st : t.getSubTasks()) {
                     if (st.getDueDate() != null &&
@@ -150,8 +172,7 @@ public class DashboardController {
             }
         }
 
-        // Exams
-        List<Subject> subjects = subjectRepository.findAll();
+        List<Subject> subjects = subjectRepository.findByUserId(userId);
         for (Subject s : subjects) {
             for (Exam e : s.getExams()) {
                 if (e.getDate() != null &&

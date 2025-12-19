@@ -28,6 +28,9 @@ public class Task {
     @Column(length = 1000)
     private String description;
 
+    // User ownership
+    private Long userId;
+
     @Enumerated(EnumType.STRING)
     private TaskPriority priority;
 

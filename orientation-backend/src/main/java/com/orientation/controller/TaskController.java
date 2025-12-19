@@ -7,6 +7,7 @@ import com.orientation.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -18,18 +19,40 @@ public class TaskController {
     @Autowired
     private TaskRepository taskRepository;
 
+    private Long getUserId(HttpServletRequest request) {
+        String userId = request.getHeader("X-User-Id");
+        if (userId == null || userId.isEmpty())
+            return null;
+        try {
+            return Long.parseLong(userId);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
     @GetMapping
-    public List<Task> getAllTasks() {
-        return taskRepository.findAll();
+    public List<Task> getAllTasks(HttpServletRequest request) {
+        Long userId = getUserId(request);
+        if (userId == null)
+            return List.of();
+        return taskRepository.findByUserId(userId);
     }
 
     @GetMapping("/{id}")
-    public Task getTaskById(@PathVariable Long id) {
-        return taskRepository.findById(id).orElse(null);
+    public Task getTaskById(@PathVariable Long id, HttpServletRequest request) {
+        Long userId = getUserId(request);
+        Task task = taskRepository.findById(id).orElse(null);
+        if (task == null || userId == null || !userId.equals(task.getUserId()))
+            return null;
+        return task;
     }
 
     @PostMapping
-    public Task createTask(@RequestBody Task task) {
+    public Task createTask(@RequestBody Task task, HttpServletRequest request) {
+        Long userId = getUserId(request);
+        if (userId == null)
+            return null;
+        task.setUserId(userId);
         return taskRepository.save(task);
     }
 
@@ -39,7 +62,6 @@ public class TaskController {
             TaskStatus oldStatus = task.getStatus();
             TaskStatus newStatus = updatedTask.getStatus();
 
-            // Calculate minimum from subtasks
             double subTaskSum = task.getSubTasks().stream().mapToDouble(SubTask::getEstimatedHours).sum();
             double newEstHours = Math.max(updatedTask.getEstimatedHours(), subTaskSum);
             if (newEstHours < 1)
@@ -53,11 +75,10 @@ public class TaskController {
             task.setActualHours(updatedTask.getActualHours());
             task.setDueDate(updatedTask.getDueDate());
 
-            // Set completedAt when status changes to DONE
             if (newStatus == TaskStatus.DONE && oldStatus != TaskStatus.DONE) {
                 task.setCompletedAt(LocalDate.now());
             } else if (newStatus != TaskStatus.DONE) {
-                task.setCompletedAt(null); // Clear if no longer done
+                task.setCompletedAt(null);
             }
 
             return taskRepository.save(task);
@@ -97,14 +118,12 @@ public class TaskController {
 
             existing.setStatus(newStatus);
 
-            // Set completedAt on subtask
             if (newStatus == TaskStatus.DONE && oldStatus != TaskStatus.DONE) {
                 existing.setCompletedAt(LocalDate.now());
             } else if (newStatus != TaskStatus.DONE) {
                 existing.setCompletedAt(null);
             }
 
-            // Transition Parent to IN_PROGRESS if it was TODO and subtask is now active
             if ((newStatus == TaskStatus.DONE || newStatus == TaskStatus.IN_PROGRESS)
                     && task.getStatus() == TaskStatus.TODO) {
                 task.setStatus(TaskStatus.IN_PROGRESS);
@@ -117,19 +136,32 @@ public class TaskController {
 
     // ===== ANALYTICS ENDPOINTS =====
 
-    // Original: Total completed hours (all time)
     @GetMapping("/analytics/hours")
-    public Double getTotalStudyHours() {
-        Double taskHours = taskRepository.getTotalTaskHours();
-        Double subTaskHours = taskRepository.getTotalSubTaskHours();
+    public Double getTotalStudyHours(HttpServletRequest request) {
+        Long userId = getUserId(request);
+        if (userId == null)
+            return 0.0;
+        List<Task> allTasks = taskRepository.findByUserId(userId);
+
+        double taskHours = allTasks.stream()
+                .filter(t -> t.getStatus() == TaskStatus.DONE)
+                .mapToDouble(Task::getEstimatedHours)
+                .sum();
+        double subTaskHours = allTasks.stream()
+                .flatMap(t -> t.getSubTasks().stream())
+                .filter(st -> st.getStatus() == TaskStatus.DONE)
+                .mapToDouble(SubTask::getEstimatedHours)
+                .sum();
         return taskHours + subTaskHours;
     }
 
-    // Rolling 7-day hours
     @GetMapping("/analytics/hours/week")
-    public Double getWeeklyStudyHours() {
+    public Double getWeeklyStudyHours(HttpServletRequest request) {
+        Long userId = getUserId(request);
+        if (userId == null)
+            return 0.0;
         LocalDate weekAgo = LocalDate.now().minusDays(7);
-        List<Task> allTasks = taskRepository.findAll();
+        List<Task> allTasks = taskRepository.findByUserId(userId);
 
         double taskHours = allTasks.stream()
                 .filter(t -> t.getStatus() == TaskStatus.DONE && t.getCompletedAt() != null
@@ -147,11 +179,13 @@ public class TaskController {
         return taskHours + subTaskHours;
     }
 
-    // Count of tasks completed in rolling 7 days
     @GetMapping("/analytics/completed/week")
-    public Integer getWeeklyCompletedCount() {
+    public Integer getWeeklyCompletedCount(HttpServletRequest request) {
+        Long userId = getUserId(request);
+        if (userId == null)
+            return 0;
         LocalDate weekAgo = LocalDate.now().minusDays(7);
-        List<Task> allTasks = taskRepository.findAll();
+        List<Task> allTasks = taskRepository.findByUserId(userId);
 
         long taskCount = allTasks.stream()
                 .filter(t -> t.getStatus() == TaskStatus.DONE && t.getCompletedAt() != null
@@ -161,10 +195,12 @@ public class TaskController {
         return (int) taskCount;
     }
 
-    // Weekly history (past 8 weeks)
     @GetMapping("/analytics/hours/history")
-    public List<Map<String, Object>> getWeeklyHistory() {
-        List<Task> allTasks = taskRepository.findAll();
+    public List<Map<String, Object>> getWeeklyHistory(HttpServletRequest request) {
+        Long userId = getUserId(request);
+        if (userId == null)
+            return List.of();
+        List<Task> allTasks = taskRepository.findByUserId(userId);
         List<Map<String, Object>> result = new ArrayList<>();
 
         LocalDate today = LocalDate.now();
@@ -197,12 +233,17 @@ public class TaskController {
             result.add(weekData);
         }
 
-        Collections.reverse(result); // Oldest first
+        Collections.reverse(result);
         return result;
     }
 
     @DeleteMapping("/{id}")
-    public void deleteTask(@PathVariable Long id) {
-        taskRepository.deleteById(id);
+    public void deleteTask(@PathVariable Long id, HttpServletRequest request) {
+        Long userId = getUserId(request);
+        taskRepository.findById(id).ifPresent(task -> {
+            if (userId != null && userId.equals(task.getUserId())) {
+                taskRepository.deleteById(id);
+            }
+        });
     }
 }

@@ -120,3 +120,15 @@ body {
 /* OLD NAVBAR - HIDDEN */
 .navbar { display: none; }
 
+/* User Section */
+.sidebar-user {
+  margin-top: auto;
+  width: 100%;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-user .user-link {
+  color: var(--accent);
+}
+

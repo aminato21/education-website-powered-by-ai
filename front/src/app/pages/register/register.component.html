@@ -1,0 +1,69 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <i class="material-icons">school</i>
+      <h1>Create Account</h1>
+      <p>Join StudentAI and start learning</p>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="auth-form">
+      <div class="form-field">
+        <label>Name</label>
+        <input
+          type="text"
+          [(ngModel)]="name"
+          name="name"
+          placeholder="Your name"
+          class="auth-input"
+        />
+      </div>
+
+      <div class="form-field">
+        <label>Email</label>
+        <input
+          type="email"
+          [(ngModel)]="email"
+          name="email"
+          placeholder="your@email.com"
+          class="auth-input"
+        />
+      </div>
+
+      <div class="form-field">
+        <label>Password</label>
+        <input
+          type="password"
+          [(ngModel)]="password"
+          name="password"
+          placeholder="At least 6 characters"
+          class="auth-input"
+        />
+      </div>
+
+      <div class="form-field">
+        <label>Confirm Password</label>
+        <input
+          type="password"
+          [(ngModel)]="confirmPassword"
+          name="confirmPassword"
+          placeholder="Repeat your password"
+          class="auth-input"
+        />
+      </div>
+
+      <div class="error-message" *ngIf="error">
+        <i class="material-icons">error</i>
+        {{ error }}
+      </div>
+
+      <button type="submit" class="auth-btn" [disabled]="loading">
+        <span *ngIf="!loading">Create Account</span>
+        <span *ngIf="loading">Creating...</span>
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p>Already have an account? <a routerLink="/login">Sign in</a></p>
+    </div>
+  </div>
+</div>

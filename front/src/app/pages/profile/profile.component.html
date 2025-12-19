@@ -1,0 +1,36 @@
+<div class="profile-container">
+  <div class="profile-card" *ngIf="user">
+    <div class="profile-header">
+      <div class="avatar">
+        <i class="material-icons">person</i>
+      </div>
+      <h1>{{ user.name }}</h1>
+      <p class="email">{{ user.email }}</p>
+    </div>
+
+    <div class="profile-info">
+      <div class="info-item">
+        <i class="material-icons">calendar_today</i>
+        <div>
+          <span class="label">Member Since</span>
+          <span class="value">{{ getMemberSince() }}</span>
+        </div>
+      </div>
+
+      <div class="info-item">
+        <i class="material-icons">email</i>
+        <div>
+          <span class="label">Email</span>
+          <span class="value">{{ user.email }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-actions">
+      <button class="logout-btn" (click)="logout()">
+        <i class="material-icons">logout</i>
+        Sign Out
+      </button>
+    </div>
+  </div>
+</div>

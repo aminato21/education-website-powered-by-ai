@@ -8,6 +8,9 @@ import java.util.List;
 
 @Repository
 public interface SubjectRepository extends JpaRepository<Subject, Long> {
+    List<Subject> findByUserId(Long userId);
+
+    List<Subject> findByUserIdOrderByYearAscNameAsc(Long userId);
 
     List<Subject> findByYear(int year);
 

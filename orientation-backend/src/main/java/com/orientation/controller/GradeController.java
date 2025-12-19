@@ -6,6 +6,7 @@ import com.orientation.repository.SubjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -18,26 +19,52 @@ public class GradeController {
     @Autowired
     private SubjectRepository subjectRepository;
 
+    private Long getUserId(HttpServletRequest request) {
+        String userId = request.getHeader("X-User-Id");
+        if (userId == null || userId.isEmpty())
+            return null;
+        try {
+            return Long.parseLong(userId);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
     // ===== SUBJECTS =====
 
     @GetMapping("/subjects")
-    public List<Subject> getAllSubjects() {
-        return subjectRepository.findAllByOrderByYearAscNameAsc();
+    public List<Subject> getAllSubjects(HttpServletRequest request) {
+        Long userId = getUserId(request);
+        if (userId == null)
+            return List.of();
+        return subjectRepository.findByUserIdOrderByYearAscNameAsc(userId);
     }
 
     @GetMapping("/subjects/year/{year}")
-    public List<Subject> getSubjectsByYear(@PathVariable int year) {
-        return subjectRepository.findByYear(year);
+    public List<Subject> getSubjectsByYear(@PathVariable int year, HttpServletRequest request) {
+        Long userId = getUserId(request);
+        if (userId == null)
+            return List.of();
+        return subjectRepository.findByUserId(userId).stream()
+                .filter(s -> s.getYear() == year)
+                .collect(Collectors.toList());
     }
 
     @PostMapping("/subjects")
-    public Subject createSubject(@RequestBody Subject subject) {
+    public Subject createSubject(@RequestBody Subject subject, HttpServletRequest request) {
+        Long userId = getUserId(request);
+        if (userId == null)
+            return null;
+        subject.setUserId(userId);
         return subjectRepository.save(subject);
     }
 
     @PutMapping("/subjects/{id}")
-    public Subject updateSubject(@PathVariable Long id, @RequestBody Subject updated) {
+    public Subject updateSubject(@PathVariable Long id, @RequestBody Subject updated, HttpServletRequest request) {
+        Long userId = getUserId(request);
         return subjectRepository.findById(id).map(subject -> {
+            if (userId == null || !userId.equals(subject.getUserId()))
+                return null;
             subject.setSubjectKey(updated.getSubjectKey());
             subject.setName(updated.getName());
             subject.setYear(updated.getYear());
@@ -48,8 +75,13 @@ public class GradeController {
     }
 
     @DeleteMapping("/subjects/{id}")
-    public void deleteSubject(@PathVariable Long id) {
-        subjectRepository.deleteById(id);
+    public void deleteSubject(@PathVariable Long id, HttpServletRequest request) {
+        Long userId = getUserId(request);
+        subjectRepository.findById(id).ifPresent(subject -> {
+            if (userId != null && userId.equals(subject.getUserId())) {
+                subjectRepository.deleteById(id);
+            }
+        });
     }
 
     // ===== EXAMS =====
@@ -58,10 +90,8 @@ public class GradeController {
     public Subject addExam(@PathVariable Long subjectId, @RequestBody Exam exam) {
         Subject subject = subjectRepository.findById(subjectId)
                 .orElseThrow(() -> new RuntimeException("Subject not found"));
-
         exam.setSubject(subject);
         subject.getExams().add(exam);
-
         return subjectRepository.save(subject);
     }
 
@@ -88,17 +118,18 @@ public class GradeController {
     public Subject deleteExam(@PathVariable Long subjectId, @PathVariable Long examId) {
         Subject subject = subjectRepository.findById(subjectId)
                 .orElseThrow(() -> new RuntimeException("Subject not found"));
-
         subject.getExams().removeIf(e -> e.getId().equals(examId));
-
         return subjectRepository.save(subject);
     }
 
     // ===== ANALYTICS =====
 
     @GetMapping("/analytics/year-averages")
-    public Map<Integer, Double> getYearAverages() {
-        List<Subject> subjects = subjectRepository.findAll();
+    public Map<Integer, Double> getYearAverages(HttpServletRequest request) {
+        Long userId = getUserId(request);
+        if (userId == null)
+            return Map.of();
+        List<Subject> subjects = subjectRepository.findByUserId(userId);
 
         return subjects.stream()
                 .filter(s -> s.getAverage() != null)
@@ -107,24 +138,25 @@ public class GradeController {
                         Collectors.averagingDouble(Subject::getAverage)));
     }
 
-    // Year aggregate data for ML (subject averages + total absences)
     @GetMapping("/analytics/year/{year}/ml-data")
-    public Map<String, Object> getYearMLData(@PathVariable int year) {
-        List<Subject> subjects = subjectRepository.findByYear(year);
+    public Map<String, Object> getYearMLData(@PathVariable int year, HttpServletRequest request) {
+        Long userId = getUserId(request);
+        if (userId == null)
+            return Map.of();
+        List<Subject> subjects = subjectRepository.findByUserId(userId).stream()
+                .filter(s -> s.getYear() == year)
+                .collect(Collectors.toList());
 
         Map<String, Object> result = new java.util.HashMap<>();
 
-        // Subject averages by key (MATH, PHYSICS, etc.)
         Map<String, Double> subjectAverages = subjects.stream()
                 .filter(s -> s.getAverage() != null && Subject.ML_SUBJECTS.contains(s.getSubjectKey()))
                 .collect(Collectors.toMap(
                         Subject::getSubjectKey,
                         Subject::getAverage,
-                        (a, b) -> a // In case of duplicates, keep first
-                ));
+                        (a, b) -> a));
         result.put("subjectAverages", subjectAverages);
 
-        // Total absences for the year
         int totalAbsences = subjects.stream().mapToInt(Subject::getAbsenceDays).sum();
         result.put("totalAbsences", totalAbsences);
 

@@ -1,34 +1,59 @@
-<!-- Collapsible Sidebar -->
-<div class="sidebar">
-  <div class="sidebar-logo" routerLink="/">
-    <i class="material-icons">school</i><span class="logo-text">StudentAI</span>
-  </div>
-  <nav class="sidebar-links">
-    <a
-      routerLink="/"
-      routerLinkActive="active"
-      [routerLinkActiveOptions]="{ exact: true }"
-      class="sidebar-link"
-    >
-      <span class="icon"><i class="material-icons">dashboard</i></span
-      ><span class="label">Dashboard</span>
-    </a>
-    <a routerLink="/tasks" routerLinkActive="active" class="sidebar-link">
-      <span class="icon"><i class="material-icons">assignment</i></span
-      ><span class="label">Tasks</span>
-    </a>
-    <a routerLink="/grades" routerLinkActive="active" class="sidebar-link">
-      <span class="icon"><i class="material-icons">auto_stories</i></span
-      ><span class="label">Grades</span>
-    </a>
-    <a routerLink="/orientation" routerLinkActive="active" class="sidebar-link">
-      <span class="icon"><i class="material-icons">explore</i></span
-      ><span class="label">Orientation</span>
-    </a>
-  </nav>
-</div>
-
-<!-- Main Content -->
-<div class="main-content">
+<!-- Auth pages - full screen without sidebar -->
+<ng-container *ngIf="isAuthPage">
   <router-outlet></router-outlet>
-</div>
+</ng-container>
+
+<!-- Regular pages with sidebar -->
+<ng-container *ngIf="!isAuthPage">
+  <!-- Collapsible Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-logo" routerLink="/">
+      <i class="material-icons">school</i><span class="logo-text">StudentAI</span>
+    </div>
+    <nav class="sidebar-links">
+      <a
+        routerLink="/"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="sidebar-link"
+      >
+        <span class="icon"><i class="material-icons">dashboard</i></span
+        ><span class="label">Dashboard</span>
+      </a>
+      <a routerLink="/tasks" routerLinkActive="active" class="sidebar-link">
+        <span class="icon"><i class="material-icons">assignment</i></span
+        ><span class="label">Tasks</span>
+      </a>
+      <a routerLink="/grades" routerLinkActive="active" class="sidebar-link">
+        <span class="icon"><i class="material-icons">auto_stories</i></span
+        ><span class="label">Grades</span>
+      </a>
+      <a routerLink="/orientation" routerLinkActive="active" class="sidebar-link">
+        <span class="icon"><i class="material-icons">explore</i></span
+        ><span class="label">Orientation</span>
+      </a>
+    </nav>
+
+    <!-- User Section -->
+    <div class="sidebar-user">
+      <a
+        *ngIf="currentUser"
+        routerLink="/profile"
+        routerLinkActive="active"
+        class="sidebar-link user-link"
+      >
+        <span class="icon"><i class="material-icons">person</i></span
+        ><span class="label">{{ currentUser.name }}</span>
+      </a>
+      <a *ngIf="!currentUser" routerLink="/login" routerLinkActive="active" class="sidebar-link">
+        <span class="icon"><i class="material-icons">login</i></span
+        ><span class="label">Login</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <router-outlet></router-outlet>
+  </div>
+</ng-container>

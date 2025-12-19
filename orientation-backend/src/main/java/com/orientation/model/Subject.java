@@ -36,6 +36,9 @@ public class Subject {
 
     private int absenceDays = 0; // Days of absence for this subject
 
+    // User ownership
+    private Long userId;
+
     @OneToMany(mappedBy = "subject", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<Exam> exams = new ArrayList<>();
