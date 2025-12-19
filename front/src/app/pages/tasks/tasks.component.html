@@ -5,10 +5,10 @@
   <div class="productivity-card">
     <div class="prod-header">
       <h3><i class="material-icons">rocket_launch</i> Weekly Focus</h3>
-      <span class="hours-badge">{{ weeklyHours }}h / 20h Goal</span>
+      <span class="hours-badge">{{ weeklyHours }}h / 50h Goal</span>
     </div>
     <div class="progress-bar">
-      <div class="progress-fill" [style.width.%]="(weeklyHours / 20) * 100"></div>
+      <div class="progress-fill" [style.width.%]="(weeklyHours / 50) * 100"></div>
     </div>
     <p class="prod-subtext" *ngIf="weeklyHours > 0">
       Great job! You've logged {{ weeklyHours }} hours.
@@ -27,9 +27,9 @@
           [(ngModel)]="newTask.title"
           placeholder="e.g. Math Homework"
           class="main-input"
-          [class.invalid]="!newTask.title"
+          [class.invalid]="formSubmitted && !newTask.title"
         />
-        <span class="error-msg" *ngIf="!newTask.title">Title is required</span>
+        <span class="error-msg" *ngIf="formSubmitted && !newTask.title">Title is required</span>
       </div>
 
       <div class="form-field full-width">
@@ -54,9 +54,9 @@
           type="date"
           [(ngModel)]="newTask.dueDate"
           class="date-input"
-          [class.invalid]="!newTask.dueDate"
+          [class.invalid]="formSubmitted && !newTask.dueDate"
         />
-        <span class="error-msg" *ngIf="!newTask.dueDate">Date is required</span>
+        <span class="error-msg" *ngIf="formSubmitted && !newTask.dueDate">Date is required</span>
       </div>
 
       <div class="form-field">
@@ -352,7 +352,6 @@
             <select [(ngModel)]="editTaskData.priority" class="priority-select">
               <option *ngFor="let p of priorities" [value]="p">{{ p }}</option>
             </select>
-            <span class="warning-msg" *ngIf="getPriorityWarning()">{{ getPriorityWarning() }}</span>
           </div>
           <div class="form-field">
             <label>Due Date *</label>
@@ -375,8 +374,8 @@
           <button
             class="save-btn"
             (click)="saveEditTask()"
-            [disabled]="getPriorityWarning() || getHoursWarning()"
-            [class.disabled]="getPriorityWarning() || getHoursWarning()"
+            [disabled]="getHoursWarning()"
+            [class.disabled]="getHoursWarning()"
           >
             Save Changes
           </button>

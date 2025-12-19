@@ -60,6 +60,10 @@
         <span class="stat-value">{{ getStatsForYear(year).totalExams }}</span>
         <span class="stat-label">Exams</span>
       </div>
+      <div class="stat-item">
+        <span class="stat-value">{{ getStatsForYear(year).totalAbsences }}</span>
+        <span class="stat-label">Absences</span>
+      </div>
       <div class="stat-item best" *ngIf="getStatsForYear(year).bestSubject">
         <span class="stat-value">{{ getStatsForYear(year).bestSubject?.name }}</span>
         <span class="stat-label"
@@ -94,6 +98,10 @@
           <span
             ><i class="material-icons inline-icon">description</i>
             {{ subject.exams?.length || 0 }} exams</span
+          >
+          <span *ngIf="subject.absenceDays"
+            ><i class="material-icons inline-icon">event_busy</i>
+            {{ subject.absenceDays }} absences</span
           >
         </div>
         <div class="subject-actions" (click)="$event.stopPropagation()">
@@ -134,17 +142,6 @@
         </select>
       </div>
 
-      <!-- Custom name input for "Other" -->
-      <div class="form-field full-width" *ngIf="newSubject.subjectKey === 'OTHER'">
-        <label>Custom Subject Name *</label>
-        <input
-          type="text"
-          [(ngModel)]="customSubjectName"
-          placeholder="e.g. Art, Music..."
-          class="main-input"
-        />
-      </div>
-
       <div class="row">
         <div class="form-field">
           <label>Year *</label>
@@ -161,16 +158,24 @@
         </div>
       </div>
 
+      <div class="form-field full-width">
+        <label>Absence Days</label>
+        <input
+          type="number"
+          [(ngModel)]="newSubject.absenceDays"
+          min="0"
+          placeholder="0"
+          class="hours-input"
+        />
+        <small class="hint-text">Number of days absent for this subject</small>
+      </div>
+
       <div class="modal-actions">
         <button class="cancel-btn" (click)="closeSubjectModal()">Cancel</button>
         <button
           class="save-btn"
           (click)="saveSubject()"
-          [disabled]="
-            !newSubject.subjectKey ||
-            !newSubject.year ||
-            (newSubject.subjectKey === 'OTHER' && !customSubjectName)
-          "
+          [disabled]="!newSubject.subjectKey || !newSubject.year"
         >
           {{ isEditingSubject ? 'Save Changes' : 'Add Subject' }}
         </button>

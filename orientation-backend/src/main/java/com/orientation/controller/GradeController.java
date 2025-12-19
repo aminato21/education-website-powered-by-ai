@@ -42,6 +42,7 @@ public class GradeController {
             subject.setName(updated.getName());
             subject.setYear(updated.getYear());
             subject.setTeacher(updated.getTeacher());
+            subject.setAbsenceDays(updated.getAbsenceDays());
             return subjectRepository.save(subject);
         }).orElseThrow(() -> new RuntimeException("Subject not found"));
     }
@@ -104,5 +105,29 @@ public class GradeController {
                 .collect(Collectors.groupingBy(
                         Subject::getYear,
                         Collectors.averagingDouble(Subject::getAverage)));
+    }
+
+    // Year aggregate data for ML (subject averages + total absences)
+    @GetMapping("/analytics/year/{year}/ml-data")
+    public Map<String, Object> getYearMLData(@PathVariable int year) {
+        List<Subject> subjects = subjectRepository.findByYear(year);
+
+        Map<String, Object> result = new java.util.HashMap<>();
+
+        // Subject averages by key (MATH, PHYSICS, etc.)
+        Map<String, Double> subjectAverages = subjects.stream()
+                .filter(s -> s.getAverage() != null && Subject.ML_SUBJECTS.contains(s.getSubjectKey()))
+                .collect(Collectors.toMap(
+                        Subject::getSubjectKey,
+                        Subject::getAverage,
+                        (a, b) -> a // In case of duplicates, keep first
+                ));
+        result.put("subjectAverages", subjectAverages);
+
+        // Total absences for the year
+        int totalAbsences = subjects.stream().mapToInt(Subject::getAbsenceDays).sum();
+        result.put("totalAbsences", totalAbsences);
+
+        return result;
     }
 }

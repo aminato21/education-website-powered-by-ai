@@ -7,9 +7,6 @@ import com.orientation.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import com.orientation.model.enums.TaskPriority;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @RestController
@@ -33,8 +30,6 @@ public class TaskController {
 
     @PostMapping
     public Task createTask(@RequestBody Task task) {
-        // Apply auto-priority escalation on create
-        applyAutoPriority(task);
         return taskRepository.save(task);
     }
 
@@ -55,28 +50,8 @@ public class TaskController {
             task.setActualHours(updatedTask.getActualHours());
             task.setDueDate(updatedTask.getDueDate());
 
-            // Apply auto-priority escalation
-            applyAutoPriority(task);
-
             return taskRepository.save(task);
         }).orElseThrow(() -> new RuntimeException("Task not found"));
-    }
-
-    // Auto-escalate priority based on due date
-    private void applyAutoPriority(Task task) {
-        if (task.getDueDate() == null)
-            return;
-
-        long daysUntilDue = ChronoUnit.DAYS.between(LocalDate.now(), task.getDueDate());
-
-        // <= 1 day: force HIGH
-        if (daysUntilDue <= 1 && task.getPriority() != TaskPriority.HIGH) {
-            task.setPriority(TaskPriority.HIGH);
-        }
-        // <= 3 days and LOW: bump to MEDIUM
-        else if (daysUntilDue <= 3 && task.getPriority() == TaskPriority.LOW) {
-            task.setPriority(TaskPriority.MEDIUM);
-        }
     }
 
     @PostMapping("/{id}/subtasks")

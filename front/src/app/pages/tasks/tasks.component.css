@@ -877,6 +877,47 @@ button.disabled {
 }
 
 /* ============================================
+   STATUS SELECT (Task Footer)
+   ============================================ */
+.status-select {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #eaeaea;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-right: auto;
+}
+
+.status-select:focus {
+  outline: none;
+  border-color: #667eea;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.status-select option {
+  background: #1a1a2e;
+  color: #eaeaea;
+}
+
+/* Status background colors */
+.status-select.TODO {
+  background: rgba(243, 156, 18, 0.15);
+  border-color: rgba(243, 156, 18, 0.4);
+}
+.status-select.IN_PROGRESS {
+  background: rgba(52, 152, 219, 0.15);
+  border-color: rgba(52, 152, 219, 0.4);
+}
+.status-select.DONE {
+  background: rgba(39, 174, 96, 0.15);
+  border-color: rgba(39, 174, 96, 0.4);
+}
+
+
+/* ============================================
    DUE COUNTDOWN BADGE
    ============================================ */
 .due-countdown {

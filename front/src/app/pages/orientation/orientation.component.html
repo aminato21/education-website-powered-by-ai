@@ -1,64 +1,94 @@
 <div class="container">
-  <h2>Orientation Académique</h2>
-  <form (ngSubmit)="onSubmit()" #orientationForm="ngForm">
-    <div class="form-group">
-      <label>Maths:</label>
-      <input type="number" [(ngModel)]="studentInput.mathScore" name="mathScore" required />
-    </div>
-    <div class="form-group">
-      <label>Physique:</label>
-      <input type="number" [(ngModel)]="studentInput.physicsScore" name="physicsScore" required />
-    </div>
-    <div class="form-group">
-      <label>Chimie:</label>
-      <input
-        type="number"
-        [(ngModel)]="studentInput.chemistryScore"
-        name="chemistryScore"
-        required
-      />
-    </div>
-    <div class="form-group">
-      <label>Biologie:</label>
-      <input type="number" [(ngModel)]="studentInput.biologyScore" name="biologyScore" required />
-    </div>
-    <div class="form-group">
-      <label>Anglais:</label>
-      <input type="number" [(ngModel)]="studentInput.englishScore" name="englishScore" required />
-    </div>
-    <div class="form-group">
-      <label>Géographie:</label>
-      <input
-        type="number"
-        [(ngModel)]="studentInput.geographyScore"
-        name="geographyScore"
-        required
-      />
-    </div>
-    <div class="form-group">
-      <label>Heures d'étude (hebdo):</label>
-      <input
-        type="number"
-        [(ngModel)]="studentInput.weeklySelfStudyHours"
-        name="weeklySelfStudyHours"
-        required
-      />
-    </div>
-    <div class="form-group">
-      <label>Jours d'absence:</label>
-      <input type="number" [(ngModel)]="studentInput.absenceDays" name="absenceDays" required />
-    </div>
+  <h2><i class="material-icons header-icon">school</i> Career Orientation</h2>
 
-    <button type="submit" [disabled]="!orientationForm.form.valid || loading">
-      {{ loading ? 'Calcul en cours...' : 'Recommander ma filière' }}
-    </button>
-  </form>
-
-  <div *ngIf="prediction" class="result">
-    <h3>🎯 Filière recommandée : {{ prediction }}</h3>
+  <!-- Year Selector -->
+  <div class="year-selector-row">
+    <label>Select Academic Year:</label>
+    <select [(ngModel)]="selectedYear" (change)="onYearChange()" class="year-select">
+      <option *ngFor="let year of availableYears" [value]="year">Year {{ year }}</option>
+    </select>
+    <span *ngIf="availableYears.length === 0" class="no-data-hint">
+      No grade data found. Add grades first!
+    </span>
   </div>
 
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="loading">
+    <i class="material-icons spin">autorenew</i>
+    Loading grade data...
+  </div>
+
+  <!-- Grade Data Display (Read-Only) -->
+  <div class="grades-panel" *ngIf="dataLoaded && !loading">
+    <h3><i class="material-icons inline-icon">insights</i> Your Performance</h3>
+    <p class="panel-hint">Auto-loaded from your Grades</p>
+
+    <div class="subject-grid">
+      <div
+        *ngFor="let subj of mlSubjects"
+        class="subject-chip"
+        [style.border-color]="getScoreColor(getSubjectScore(subj.key))"
+      >
+        <span class="subject-name">{{ subj.name }}</span>
+        <span class="subject-score" [style.color]="getScoreColor(getSubjectScore(subj.key))">
+          {{ formatScore(getSubjectScore(subj.key)) }}
+        </span>
+      </div>
+    </div>
+
+    <div class="absence-summary">
+      <i class="material-icons inline-icon">event_busy</i>
+      Total Absences: <strong>{{ totalAbsences }} days</strong>
+    </div>
+  </div>
+
+  <!-- Manual Input Section -->
+  <div class="manual-input-section" *ngIf="dataLoaded">
+    <h3><i class="material-icons inline-icon">schedule</i> Weekly Study Hours</h3>
+
+    <div class="hours-input-row">
+      <input
+        type="number"
+        [(ngModel)]="weeklySelfStudyHours"
+        min="0"
+        max="100"
+        class="hours-input"
+      />
+      <span class="hours-label">hours / week</span>
+    </div>
+  </div>
+
+  <!-- Predict Button -->
+  <button
+    type="button"
+    (click)="onSubmit()"
+    [disabled]="!canPredict() || predicting"
+    *ngIf="dataLoaded"
+  >
+    <i class="material-icons btn-icon" *ngIf="!predicting">psychology</i>
+    <i class="material-icons btn-icon spin" *ngIf="predicting">autorenew</i>
+    {{ predicting ? 'Analyzing...' : 'Get Career Recommendation' }}
+  </button>
+
+  <!-- Prediction Result -->
+  <div *ngIf="prediction" class="result">
+    <i class="material-icons result-icon">emoji_objects</i>
+    <h3>Recommended Field: {{ prediction }}</h3>
+  </div>
+
+  <!-- Error Display -->
   <div *ngIf="error" class="error">
+    <i class="material-icons error-icon">error_outline</i>
     {{ error }}
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="availableYears.length === 0 && !loading">
+    <i class="material-icons empty-icon">school</i>
+    <p>No grade data available yet.</p>
+    <p>
+      Add subjects and exams in the <strong>Grades</strong> section first, then come back here for
+      career recommendations!
+    </p>
   </div>
 </div>

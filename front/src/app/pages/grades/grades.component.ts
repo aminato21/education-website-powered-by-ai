@@ -124,6 +124,7 @@ export class GradesComponent implements OnInit {
     const yearSubjects = this.subjects.filter(s => s.year === year);
     const totalSubjects = yearSubjects.length;
     const totalExams = yearSubjects.reduce((sum, s) => sum + (s.exams?.length || 0), 0);
+    const totalAbsences = yearSubjects.reduce((sum, s) => sum + (s.absenceDays || 0), 0);
     
     // Find best and worst subjects for THIS YEAR
     const subjectsWithAvg = yearSubjects
@@ -136,6 +137,7 @@ export class GradesComponent implements OnInit {
     return {
       totalSubjects,
       totalExams,
+      totalAbsences,
       bestSubject: best ? { name: best.name, avg: best.average } : null,
       worstSubject: worst && worst !== best ? { name: worst.name, avg: worst.average } : null
     };

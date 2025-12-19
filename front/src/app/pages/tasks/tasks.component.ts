@@ -33,6 +33,7 @@ export class TasksComponent implements OnInit {
   // NEW: Filtering & Sorting
   activeFilter: string = 'ALL';
   sortBy: string = 'dueDate'; // 'dueDate' | 'priority' | 'title'
+  formSubmitted = false; // Track if user tried to submit
 
   constructor(private taskService: TaskService, private cd: ChangeDetectorRef) {}
 
@@ -57,26 +58,43 @@ export class TasksComponent implements OnInit {
 
   // NEW: Filtered and sorted tasks
   getFilteredTasks(): Task[] {
-    let filtered = this.tasks;
+    // Create a shallow copy to avoid mutating original array during sort
+    let filtered = [...this.tasks];
     
     // Apply status filter
     if (this.activeFilter !== 'ALL') {
       filtered = filtered.filter(t => t.status === this.activeFilter);
     }
     
-    // Apply sorting
+    // Apply sorting with secondary tiebreakers
     return filtered.sort((a, b) => {
+      const order: any = { 'HIGH': 0, 'MEDIUM': 1, 'LOW': 2 };
+      
+      // Helper functions
+      const getPriorityRank = (p: any) => {
+        const key = (p || 'LOW').toString().toUpperCase();
+        return order[key] !== undefined ? order[key] : 2;
+      };
+      const getDateValue = (d: any) => d ? new Date(d).getTime() : Infinity;
+      
       if (this.sortBy === 'priority') {
-        const order = { HIGH: 0, MEDIUM: 1, LOW: 2 };
-        return (order[a.priority] || 2) - (order[b.priority] || 2);
+        const rank1 = getPriorityRank(a.priority);
+        const rank2 = getPriorityRank(b.priority);
+        if (rank1 !== rank2) return rank1 - rank2;
+        // Tiebreaker: due date (earlier first)
+        return getDateValue(a.dueDate) - getDateValue(b.dueDate);
       }
+      
       if (this.sortBy === 'title') {
         return a.title.localeCompare(b.title);
       }
-      // Default: dueDate
-      const aDate = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
-      const bDate = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
-      return aDate - bDate;
+      
+      // Default: dueDate, with priority as tiebreaker
+      const aDate = getDateValue(a.dueDate);
+      const bDate = getDateValue(b.dueDate);
+      if (aDate !== bDate) return aDate - bDate;
+      // Tiebreaker: priority (HIGH first)
+      return getPriorityRank(a.priority) - getPriorityRank(b.priority);
     });
   }
 
@@ -118,10 +136,12 @@ export class TasksComponent implements OnInit {
   }
 
   addTask() {
+    this.formSubmitted = true;
     if (!this.isFormValid()) return;
     this.taskService.createTask(this.newTask).subscribe(() => {
       this.loadTasks();
       this.newTask = this.getEmptyTask();
+      this.formSubmitted = false; // Reset after successful add
       this.cd.detectChanges();
     });
   }
@@ -169,8 +189,10 @@ export class TasksComponent implements OnInit {
   updateStatus(task: Task, event: any) {
     const newStatus = event.target.value;
     task.status = newStatus;
+    this.cd.detectChanges(); // Immediate UI update
     this.taskService.updateTask(task).subscribe(() => {
-        this.loadHours(); // Fix: Refresh pipe/progress bar
+        this.loadHours(); // Refresh analytics
+        this.cd.detectChanges();
     });
   }
 
@@ -217,16 +239,7 @@ export class TasksComponent implements OnInit {
     return Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
   }
 
-  getPriorityWarning(): string | null {
-    const days = this.getDaysUntilDue();
-    if (days <= 1 && this.editTaskData.priority !== TaskPriority.HIGH) {
-      return '⚠️ Due in ≤1 day: Priority will be set to HIGH';
-    }
-    if (days <= 3 && this.editTaskData.priority === TaskPriority.LOW) {
-      return '⚠️ Due in ≤3 days: Priority will be bumped to MEDIUM';
-    }
-    return null;
-  }
+  // Priority can be set freely by the user - no warnings
 
   getHoursWarning(): string | null {
     const subtaskSum = this.getSubTaskSum();

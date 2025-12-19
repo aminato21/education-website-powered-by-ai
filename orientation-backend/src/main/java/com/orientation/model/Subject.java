@@ -17,7 +17,7 @@ import java.util.Set;
 @AllArgsConstructor
 public class Subject {
 
-    // Pre-defined ML subjects (must match StudentInput fields)
+    // Pre-defined ML subjects (no OTHER - only fixed subjects)
     public static final Set<String> ML_SUBJECTS = Set.of(
             "MATH", "PHYSICS", "CHEMISTRY", "BIOLOGY", "ENGLISH", "GEOGRAPHY");
 
@@ -25,7 +25,7 @@ public class Subject {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Key for ML mapping (e.g., "MATH", "PHYSICS", or "OTHER")
+    // Key for ML mapping (e.g., "MATH", "PHYSICS")
     private String subjectKey;
 
     private String name; // Display name (e.g. "Mathematics", "Physics")
@@ -33,6 +33,8 @@ public class Subject {
     private int year; // 1, 2, 3... (academic year)
 
     private String teacher; // optional
+
+    private int absenceDays = 0; // Days of absence for this subject
 
     @OneToMany(mappedBy = "subject", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference

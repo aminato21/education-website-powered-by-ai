@@ -2,15 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-// Pre-defined subjects for ML (must match backend)
+// Pre-defined subjects for ML (no custom option)
 export const ML_SUBJECTS = [
   { key: 'MATH', name: 'Mathematics' },
   { key: 'PHYSICS', name: 'Physics' },
   { key: 'CHEMISTRY', name: 'Chemistry' },
   { key: 'BIOLOGY', name: 'Biology' },
   { key: 'ENGLISH', name: 'English' },
-  { key: 'GEOGRAPHY', name: 'Geography' },
-  { key: 'OTHER', name: 'Other (Custom)' }
+  { key: 'GEOGRAPHY', name: 'Geography' }
 ];
 
 export interface Exam {
@@ -28,6 +27,7 @@ export interface Subject {
   name: string;
   year: number;
   teacher?: string;
+  absenceDays?: number; // Days of absence for this subject
   exams?: Exam[];
   average?: number;
 }
@@ -77,5 +77,10 @@ export class GradeService {
   // Analytics
   getYearAverages(): Observable<{ [year: number]: number }> {
     return this.http.get<{ [year: number]: number }>(`${this.apiUrl}/analytics/year-averages`);
+  }
+  
+  // ML data for a specific year (subject averages + total absences)
+  getYearMLData(year: number): Observable<{ subjectAverages: { [key: string]: number }, totalAbsences: number }> {
+    return this.http.get<{ subjectAverages: { [key: string]: number }, totalAbsences: number }>(`${this.apiUrl}/analytics/year/${year}/ml-data`);
   }
 }
