@@ -27,6 +27,9 @@ export class DashboardComponent implements OnInit {
   currentMonth = this.currentDate.getMonth() + 1; // 1-indexed
   calendarDays: (number | null)[] = [];
   
+  // Weekly history chart
+  weeklyHistory: { label: string; hours: number }[] = [];
+  
   monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
                 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -41,6 +44,7 @@ export class DashboardComponent implements OnInit {
     this.loadSummary();
     this.loadUpcoming();
     this.loadCompletedTasks();
+    this.loadWeeklyHistory();
     this.buildCalendar();
     this.loadCalendarEvents();
   }
@@ -63,10 +67,47 @@ export class DashboardComponent implements OnInit {
   }
 
   loadCompletedTasks() {
-    this.taskService.getTasks().subscribe(tasks => {
-      this.completedTasks = tasks.filter(t => t.status === 'DONE').length;
+    this.taskService.getWeeklyCompletedCount().subscribe(count => {
+      this.completedTasks = count;
       this.cd.detectChanges();
     });
+  }
+
+  loadWeeklyHistory() {
+    this.taskService.getWeeklyHistory().subscribe(data => {
+      this.weeklyHistory = data.map(w => ({ label: w.label, hours: w.hours }));
+      // Default to current week (last in array)
+      this.selectedWeekIndex = this.weeklyHistory.length - 1;
+      this.cd.detectChanges();
+    });
+  }
+
+  // Week navigation
+  selectedWeekIndex = 0;
+  
+  prevWeek() {
+    if (this.selectedWeekIndex > 0) {
+      this.selectedWeekIndex--;
+      this.cd.detectChanges();
+    }
+  }
+  
+  nextWeek() {
+    if (this.selectedWeekIndex < this.weeklyHistory.length - 1) {
+      this.selectedWeekIndex++;
+      this.cd.detectChanges();
+    }
+  }
+  
+  getWeekLabel(): string {
+    if (this.weeklyHistory.length === 0) return 'This Week';
+    if (this.selectedWeekIndex === this.weeklyHistory.length - 1) return 'This Week';
+    return this.weeklyHistory[this.selectedWeekIndex]?.label || 'Week';
+  }
+  
+  getSelectedWeekHours(): number {
+    if (this.weeklyHistory.length === 0) return 0;
+    return this.weeklyHistory[this.selectedWeekIndex]?.hours || 0;
   }
 
   loadCalendarEvents() {

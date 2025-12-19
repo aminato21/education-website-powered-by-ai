@@ -36,6 +36,9 @@ public class SubTask {
     // Estimated time for this sub-task
     private double estimatedHours;
 
+    // Completion date for weekly hours tracking
+    private java.time.LocalDate completedAt;
+
     @ManyToOne
     @JoinColumn(name = "task_id")
     @JsonBackReference // Prevent infinite recursion

@@ -290,7 +290,17 @@
       <div class="row" *ngIf="isExamDatePassed()">
         <div class="form-field">
           <label>Grade Obtained *</label>
-          <input type="number" [(ngModel)]="newExam.grade" min="0" class="hours-input" />
+          <input
+            type="number"
+            [(ngModel)]="newExam.grade"
+            min="0"
+            [max]="newExam.maxGrade"
+            class="hours-input"
+            [class.invalid]="newExam.grade > newExam.maxGrade"
+          />
+          <span class="error-msg" *ngIf="newExam.grade > newExam.maxGrade">
+            Grade cannot exceed {{ newExam.maxGrade }}
+          </span>
         </div>
         <div class="form-field">
           <label>Max Grade *</label>
@@ -307,7 +317,11 @@
 
       <div class="modal-actions">
         <button class="cancel-btn" (click)="closeExamModal()">Cancel</button>
-        <button class="save-btn" (click)="saveExam()" [disabled]="!newExam.name">
+        <button
+          class="save-btn"
+          (click)="saveExam()"
+          [disabled]="!newExam.name || newExam.grade > newExam.maxGrade"
+        >
           {{ isEditingExam ? 'Save Changes' : 'Add Exam' }}
         </button>
       </div>

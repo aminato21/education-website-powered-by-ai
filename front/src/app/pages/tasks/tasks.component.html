@@ -115,6 +115,15 @@
         <option value="title">Title</option>
       </select>
     </div>
+    <button
+      class="toggle-btn"
+      [class.active]="!hideCompletedOverdue"
+      (click)="hideCompletedOverdue = !hideCompletedOverdue"
+      title="Toggle completed overdue tasks"
+    >
+      <i class="material-icons">{{ hideCompletedOverdue ? 'visibility_off' : 'visibility' }}</i>
+      {{ hideCompletedOverdue ? 'Show Done' : 'Hide Done' }}
+    </button>
   </div>
 
   <!-- Task List -->

@@ -24,7 +24,7 @@ public class Task {
     private Long id;
 
     private String title;
-    
+
     @Column(length = 1000)
     private String description;
 
@@ -36,14 +36,17 @@ public class Task {
 
     // Estimated total time for the parent task
     private double estimatedHours;
-    
+
     // Actual time spent (aggregated usually, or logged directly)
     private double actualHours;
 
     private LocalDate dueDate;
-    
+
     // Creation date for sorting
     private LocalDate createdAt;
+
+    // Completion date for weekly hours tracking
+    private LocalDate completedAt;
 
     @OneToMany(mappedBy = "parentTask", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
@@ -52,7 +55,9 @@ public class Task {
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDate.now();
-        if (this.status == null) this.status = TaskStatus.TODO;
-        if (this.priority == null) this.priority = TaskPriority.MEDIUM;
+        if (this.status == null)
+            this.status = TaskStatus.TODO;
+        if (this.priority == null)
+            this.priority = TaskPriority.MEDIUM;
     }
 }

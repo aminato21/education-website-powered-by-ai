@@ -73,7 +73,23 @@ export class TaskService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
+  // Total hours (all time)
   getWeeklyHours(): Observable<number> {
     return this.http.get<number>(`${this.apiUrl}/analytics/hours`);
+  }
+  
+  // Rolling 7-day hours
+  getRollingWeeklyHours(): Observable<number> {
+    return this.http.get<number>(`${this.apiUrl}/analytics/hours/week`);
+  }
+  
+  // Weekly history (past 8 weeks)
+  getWeeklyHistory(): Observable<{ weekStart: string, weekEnd: string, hours: number, label: string }[]> {
+    return this.http.get<{ weekStart: string, weekEnd: string, hours: number, label: string }[]>(`${this.apiUrl}/analytics/hours/history`);
+  }
+  
+  // Completed tasks count (rolling 7 days)
+  getWeeklyCompletedCount(): Observable<number> {
+    return this.http.get<number>(`${this.apiUrl}/analytics/completed/week`);
   }
 }

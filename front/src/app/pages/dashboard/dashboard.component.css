@@ -160,6 +160,47 @@ h1 {
   animation: shimmer 2s infinite;
 }
 
+/* Week Navigation in Focus Card */
+.week-nav-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.week-nav-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  border-radius: 6px;
+  padding: 4px;
+  cursor: pointer;
+  color: #888;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.week-nav-btn:hover:not(:disabled) {
+  background: rgba(102, 126, 234, 0.3);
+  color: #eaeaea;
+}
+
+.week-nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.week-nav-btn i {
+  font-size: 1.1rem;
+}
+
+.week-nav-header .card-label {
+  font-size: 0.72rem;
+  min-width: 70px;
+  text-align: center;
+}
+
 /* ============================================
    EVOLUTION COMMENT
    ============================================ */

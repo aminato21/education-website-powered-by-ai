@@ -34,7 +34,6 @@ export class GradesComponent implements OnInit {
   
   // Form Data
   newSubject: Subject = this.getEmptySubject();
-  customSubjectName = ''; // For "Other" option
   newExam: Exam = this.getEmptyExam();
   isEditingSubject = false;
   isEditingExam = false;
@@ -152,7 +151,6 @@ export class GradesComponent implements OnInit {
 
   openEditSubject(subject: Subject) {
     this.newSubject = { ...subject };
-    this.customSubjectName = subject.subjectKey === 'OTHER' ? subject.name : '';
     this.isEditingSubject = true;
     this.showSubjectModal = true;
   }
@@ -160,29 +158,20 @@ export class GradesComponent implements OnInit {
   closeSubjectModal() {
     this.showSubjectModal = false;
     this.newSubject = this.getEmptySubject();
-    this.customSubjectName = '';
   }
 
   onSubjectKeyChange() {
-    // Auto-fill name from key unless it's "OTHER"
-    if (this.newSubject.subjectKey !== 'OTHER') {
-      const found = this.mlSubjects.find(s => s.key === this.newSubject.subjectKey);
-      this.newSubject.name = found ? found.name : '';
-    }
+    // Auto-fill name from key
+    const found = this.mlSubjects.find(s => s.key === this.newSubject.subjectKey);
+    this.newSubject.name = found ? found.name : '';
   }
 
   saveSubject() {
     if (!this.newSubject.subjectKey || !this.newSubject.year) return;
     
-    // Handle "Other" custom name
-    if (this.newSubject.subjectKey === 'OTHER') {
-      if (!this.customSubjectName) return;
-      this.newSubject.name = this.customSubjectName;
-    } else {
-      // Use pre-defined name
-      const found = this.mlSubjects.find(s => s.key === this.newSubject.subjectKey);
-      this.newSubject.name = found ? found.name : this.newSubject.subjectKey;
-    }
+    // Use pre-defined name from subject key
+    const found = this.mlSubjects.find(s => s.key === this.newSubject.subjectKey);
+    this.newSubject.name = found ? found.name : this.newSubject.subjectKey;
 
     if (this.isEditingSubject) {
       this.gradeService.updateSubject(this.newSubject).subscribe(() => {

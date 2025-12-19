@@ -34,6 +34,7 @@ export class TasksComponent implements OnInit {
   activeFilter: string = 'ALL';
   sortBy: string = 'dueDate'; // 'dueDate' | 'priority' | 'title'
   formSubmitted = false; // Track if user tried to submit
+  hideCompletedOverdue = true; // Hide completed overdue tasks by default
 
   constructor(private taskService: TaskService, private cd: ChangeDetectorRef) {}
 
@@ -50,7 +51,7 @@ export class TasksComponent implements OnInit {
   }
   
   loadHours() {
-    this.taskService.getWeeklyHours().subscribe(h => {
+    this.taskService.getRollingWeeklyHours().subscribe(h => {
       this.weeklyHours = h; 
       this.cd.detectChanges();
     });
@@ -60,6 +61,16 @@ export class TasksComponent implements OnInit {
   getFilteredTasks(): Task[] {
     // Create a shallow copy to avoid mutating original array during sort
     let filtered = [...this.tasks];
+    const today = new Date().setHours(0, 0, 0, 0);
+    
+    // Hide completed overdue tasks if toggle is on
+    if (this.hideCompletedOverdue) {
+      filtered = filtered.filter(t => {
+        const isOverdue = t.dueDate && new Date(t.dueDate).getTime() < today;
+        const isDone = t.status === 'DONE';
+        return !(isOverdue && isDone); // Keep if NOT (overdue AND done)
+      });
+    }
     
     // Apply status filter
     if (this.activeFilter !== 'ALL') {
@@ -69,6 +80,7 @@ export class TasksComponent implements OnInit {
     // Apply sorting with secondary tiebreakers
     return filtered.sort((a, b) => {
       const order: any = { 'HIGH': 0, 'MEDIUM': 1, 'LOW': 2 };
+      const today = new Date().setHours(0, 0, 0, 0);
       
       // Helper functions
       const getPriorityRank = (p: any) => {
@@ -81,7 +93,7 @@ export class TasksComponent implements OnInit {
         const rank1 = getPriorityRank(a.priority);
         const rank2 = getPriorityRank(b.priority);
         if (rank1 !== rank2) return rank1 - rank2;
-        // Tiebreaker: due date (earlier first)
+        // Tiebreaker: due date (soonest first)
         return getDateValue(a.dueDate) - getDateValue(b.dueDate);
       }
       
@@ -89,10 +101,26 @@ export class TasksComponent implements OnInit {
         return a.title.localeCompare(b.title);
       }
       
-      // Default: dueDate, with priority as tiebreaker
+      // Default: dueDate sorting
+      // For overdue tasks: closest to today first (most recent overdue)
+      // For future tasks: soonest first
       const aDate = getDateValue(a.dueDate);
       const bDate = getDateValue(b.dueDate);
+      const aOverdue = aDate < today;
+      const bOverdue = bDate < today;
+      
+      // Both overdue: closest to today first (higher date value = more recent)
+      if (aOverdue && bOverdue) {
+        return bDate - aDate; // Most recent overdue first
+      }
+      
+      // Only one overdue: overdue comes first (they're urgent!)
+      if (aOverdue && !bOverdue) return -1;
+      if (!aOverdue && bOverdue) return 1;
+      
+      // Both future: soonest first
       if (aDate !== bDate) return aDate - bDate;
+      
       // Tiebreaker: priority (HIGH first)
       return getPriorityRank(a.priority) - getPriorityRank(b.priority);
     });
